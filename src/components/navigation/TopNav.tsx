@@ -36,7 +36,7 @@ export default function TopNav() {
               <Fish />
             </div>
             <span className="text-xl font-bold tracking-tight">FishPoint</span>
-          </Link>
+          </Link> 
 
           {/* Actions */}
           <div className="flex items-center gap-2 sm:gap-4">
