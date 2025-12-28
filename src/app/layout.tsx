@@ -20,19 +20,53 @@ export const metadata: Metadata = {
     template: "%s | Fish Point",
   },
   description: "অনলাইনে অর্ডার করুন তাজা মাছ। ২০ মিনিটে হোম ডেলিভারি।",
+  manifest: "/manifest.json",
+  themeColor: "#000000",
+  appleWebApp: {
+    capable: true,
+    statusBarStyle: "default",
+    title: "Fish Point",
+  },
+  icons: {
+    icon: [{ url: "/logo.svg", type: "image/svg+xml" }],
+    apple: [{ url: "/logo.svg" }],
+  },
+  openGraph: {
+    title: "Fish Point - সেরা তাজা মাছের বাজার",
+    description: "অনলাইনে অর্ডার করুন তাজা মাছ। ২০ মিনিটে হোম ডেলিভারি।",
+    url: "https://fishpoint.com",
+    siteName: "Fish Point",
+    images: [
+      {
+        url: "/fish-point-og.png",
+        width: 1200,
+        height: 630,
+      },
+    ],
+    type: "website",
+  },
+  twitter: {
+    card: "summary_large_image",
+    title: "Fish Point - সেরা তাজা মাছের বাজার",
+    description: "অনলাইনে অর্ডার করুন তাজা মাছ। ২০ মিনিটে হোম ডেলিভারি।",
+    images: ["/fish-point-og.png"],
+  },
 };
 
 export default function RootLayout({
   children,
-}: Readonly<{
+}: {
   children: React.ReactNode;
-}>) {
+}) {
   return (
-    <html lang="en">
+    <html lang="bn">
       <body
         className={`${geistSans.variable} ${geistMono.variable} antialiased`}
       >
-        <CartProvider>{children}<Toaster position="top-center" /></CartProvider>
+        <CartProvider>
+          {children}
+          <Toaster position="top-center" />
+        </CartProvider>
       </body>
     </html>
   );

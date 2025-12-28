@@ -1,4 +1,5 @@
 import type { NextConfig } from "next";
+import withPWAInit from "@ducanh2912/next-pwa";
 
 const nextConfig: NextConfig = {
   images: {
@@ -18,5 +19,27 @@ const nextConfig: NextConfig = {
   reactCompiler: true,
 };
 
-export default nextConfig;
- 
+// শুধু production build এ PWA apply করো
+const isProd = process.env.NODE_ENV === "production";
+
+export default isProd
+  ? withPWAInit({
+      dest: "public",
+      register: true,
+      disable: false,
+      cacheOnFrontEndNav: false,
+      aggressiveFrontEndNavCaching: false,
+      reloadOnOnline: true,
+      workboxOptions: {
+        disableDevLogs: true,
+        skipWaiting: true,
+        clientsClaim: true,
+        runtimeCaching: [
+          {
+            urlPattern: /^https?.*/,
+            handler: "NetworkOnly",
+          },
+        ],
+      },
+    })(nextConfig)
+  : nextConfig;

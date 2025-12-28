@@ -3,12 +3,13 @@
 
 import { useState } from "react";
 import Link from "next/link";
-import { Search, User, Menu, ShoppingCart, X, Fish } from "lucide-react";
+import { Search, User, Menu, ShoppingCart, X } from "lucide-react";
 import { Button } from "@/components/ui/button";
 import { Badge } from "@/components/ui/badge";
 import { useCart } from "@/contexts/CartContext";
 
 import SearchBar from "./SearchBar";
+import Image from "next/image";
 // import SearchBar from "./SearchBar"; // যদি থাকে
 
 export default function TopNav() {
@@ -32,11 +33,18 @@ export default function TopNav() {
             className="flex items-center gap-2 transition-transform hover:scale-105 active:scale-95"
             aria-label="FishPoint Homepage"
           >
-            <div className="flex size-9 items-center justify-center rounded-xl bg-primary text-primary-foreground font-bold shadow-lg shadow-primary/20 transition-shadow hover:shadow-xl hover:shadow-primary/30">
-              <Fish />
+            <div className="flex size-9 items-center justify-center transition-shadow hover:shadow-xl">
+              <Image
+                src="/logo.svg"
+                alt="FishPoint logo"
+                width={36}
+                height={36}
+                priority
+              />
             </div>
+
             <span className="text-xl font-bold tracking-tight">FishPoint</span>
-          </Link> 
+          </Link>
 
           {/* Actions */}
           <div className="flex items-center gap-2 sm:gap-4">

@@ -1,6 +1,7 @@
 // src/components/Footer.tsx
 import Link from "next/link";
-import { Facebook, Instagram, Phone, Mail, MapPin, Fish } from "lucide-react";
+import { Facebook, Instagram, Phone, Mail, MapPin } from "lucide-react";
+import Image from "next/image";
 
 export default function Footer() {
   return (
@@ -10,8 +11,14 @@ export default function Footer() {
           {/* Brand */}
           <div className="space-y-4">
             <div className="flex items-center gap-2">
-              <div className="flex size-10 items-center justify-center rounded-xl bg-linear-to-br from-primary to-primary/80 text-primary-foreground font-bold shadow-lg shadow-primary/20">
-                <Fish className="size-6" />
+              <div className="flex size-10 items-center justify-center">
+                <Image
+                  src="/logo.svg"
+                  alt="FishPoint logo"
+                  width={36}
+                  height={36}
+                  priority
+                />
               </div>
               <span className="text-xl font-bold">FishPoint</span>
             </div>
