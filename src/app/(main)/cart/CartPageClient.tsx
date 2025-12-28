@@ -99,7 +99,7 @@ export default function CartPageClient() {
                   {item.product.discountPercentage > 0 && (
                     <Badge
                       variant="destructive"
-                      className="absolute top-1 left-1 text-[10px] px-1.5 py-0.5"
+                      className="absolute top-1 left-1 text-[10px] px-1.5 py-0.5 backdrop-blur-lg bg-orange-600/90 dark:bg-orange-700/95"
                     >
                       -{item.product.discountPercentage}%
                     </Badge>

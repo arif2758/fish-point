@@ -45,13 +45,9 @@ export default function ProductCard({ product }: { product: IProduct }) {
         />
 
         {/* Discount Badge */}
-        {product.discountPercentage > 0 && (
-          <div className="absolute left-1 top-1">
-            <Badge className="text-xs text-black px-2.5 py-0.5 shadow-lg backdrop-blur-[15px] bg-secondary">
-              -{product.discountPercentage}%
-            </Badge>
-          </div>
-        )}
+        <Badge className="absolute left-2 top-2 text-xs text-white px-2 py-0.5 backdrop-blur-lg bg-orange-600/90 dark:bg-orange-700/95">
+          -{product.discountPercentage}%
+        </Badge>
 
         {/* Stock Indicator */}
         {product.stockKg === 0 && (

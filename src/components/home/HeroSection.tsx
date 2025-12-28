@@ -11,7 +11,7 @@ const HERO_SLIDES = [
     title: "টাটকা ইলিশের মেলা",
     subtitle: "সরাসরি নদী থেকে আপনার পাতে",
     image:
-      "https://images.unsplash.com/photo-1615141982883-c7ad0e69fd62?w=1200&q=80",
+      "https://res.cloudinary.com/tanjumart/image/upload/v1766904637/ilish1_skto75.webp",
     color: "from-blue-600/90",
   },
   {
@@ -19,15 +19,16 @@ const HERO_SLIDES = [
     title: "রেডি-টু-কুক চিংড়ি",
     subtitle: "কাটার ঝামেলা নেই, শুধুই রান্না",
     image:
-      "https://images.unsplash.com/photo-1565680018434-b513d5e5fd47?w=1200&q=80",
+      "https://res.cloudinary.com/tanjumart/image/upload/v1766904634/chingri1_czie0m.webp",
     color: "from-emerald-600/90",
   },
+
   {
     id: 3,
     title: "পাবদা ও টেংরা",
     subtitle: "শীতের স্পেশাল কালেকশন",
     image:
-      "https://images.unsplash.com/photo-1544943910-4c1dc44aab44?w=1200&q=80",
+      "https://res.cloudinary.com/tanjumart/image/upload/v1766904664/tengra1_ivkiik.webp",
     color: "from-orange-600/90",
   },
 ];
