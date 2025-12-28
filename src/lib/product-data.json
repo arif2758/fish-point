@@ -461,11 +461,9 @@
     "maxOrderKg": 15,
     "minPreOrderNoticeHours": 0,
     "stockKg": 18,
-    "mainImage": "https://images.unsplash.com/photo-1544943910-4c1dc44aab44?w=800&q=80",
+    "mainImage": "https://res.cloudinary.com/tanjumart/image/upload/v1766904657/surma1_pg0k5c.webp",
     "galleryImages": [
-      "https://images.unsplash.com/photo-1535591273668-578e31182c4f?w=600&q=80",
-      "https://images.unsplash.com/photo-1559827260-dc66d52bef19?w=600&q=80",
-      "https://images.unsplash.com/photo-1615141982883-c7ad0e69fd62?w=600&q=80"
+      "https://res.cloudinary.com/tanjumart/image/upload/v1766904657/surma2_h4gqjz.webp"
     ],
     "isFeatured": true,
     "packagingType": "Poly Bag",
