@@ -10,7 +10,7 @@ export default function Footer() {
         <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-4 gap-8">
           {/* Brand */}
           <div className="space-y-4">
-            <div className="flex items-center gap-2">
+            <Link href="/" className="flex items-center gap-2 w-fit">
               <div className="flex size-10 items-center justify-center">
                 <Image
                   src="/logo.svg"
@@ -21,13 +21,13 @@ export default function Footer() {
                 />
               </div>
               <span className="text-xl font-bold">FishPoint</span>
-            </div>
+            </Link>
             <p className="text-sm text-muted-foreground leading-relaxed">
               ঢাকার সেরা তাজা মাছের অনলাইন মার্কেট। প্রিমিয়াম কোয়ালিটি, দ্রুত
               ডেলিভারি।
             </p>
             <div className="flex gap-3">
-              <a
+              <Link
                 href="https://facebook.com"
                 target="_blank"
                 rel="noopener noreferrer"
@@ -35,8 +35,8 @@ export default function Footer() {
                 aria-label="Facebook"
               >
                 <Facebook className="size-4" />
-              </a>
-              <a
+              </Link>
+              <Link
                 href="https://instagram.com"
                 target="_blank"
                 rel="noopener noreferrer"
@@ -44,7 +44,7 @@ export default function Footer() {
                 aria-label="Instagram"
               >
                 <Instagram className="size-4" />
-              </a>
+              </Link>
             </div>
           </div>
 
