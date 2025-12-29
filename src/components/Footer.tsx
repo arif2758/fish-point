@@ -23,8 +23,9 @@ export default function Footer() {
               <span className="text-xl font-bold">FishPoint</span>
             </Link>
             <p className="text-sm text-muted-foreground leading-relaxed">
-              ঢাকার সেরা তাজা মাছের অনলাইন মার্কেট। প্রিমিয়াম কোয়ালিটি, দ্রুত
-              ডেলিভারি।
+              মাছে-ভাতে বাঙ্গালি। <br />
+              প্রিমিয়াম কোয়ালিটি, <br />
+              দ্রুত ডেলিভারি।
             </p>
             <div className="flex gap-3">
               <Link

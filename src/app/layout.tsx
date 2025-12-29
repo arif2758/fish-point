@@ -37,8 +37,8 @@ export const metadata: Metadata = {
     apple: [{ url: "/logo.svg" }],
   },
   openGraph: {
-    title: "Fish Point - সেরা তাজা মাছের বাজার",
-    description: "অনলাইনে অর্ডার করুন তাজা মাছ। ২০ মিনিটে হোম ডেলিভারি।",
+    title: "Fish Point - রেডি টু কুক",
+    description: "মাছে-ভাতে বাঙ্গালি। প্রিমিয়াম কোয়ালিটি, দ্রুত ডেলিভারি।",
     url: "https://fishpoint.com",
     siteName: "Fish Point",
     images: [

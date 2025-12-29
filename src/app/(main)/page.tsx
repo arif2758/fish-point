@@ -1,8 +1,8 @@
+// src\app\(main)\page.tsx
 import { Metadata } from "next";
 import HomeClient from "./HomeClient";
 import dbConnect from "@/lib/dbConnect";
 import ProductCollectionModel from "@/models/ProductCollection";
-// import PromoTicker from "@/components/navigation/PromoTicker";
 import CategoryNav from "@/components/navigation/CategoryNav";
 
 export const metadata: Metadata = {
@@ -15,7 +15,7 @@ async function getProducts() {
   try {
     const products = await ProductCollectionModel.find({ published: true })
       .sort({ isFeatured: -1, createdAt: -1 })
-      .limit(10)
+      .limit(20) // একটু বেশি নিলাম যাতে hero + grid দুটোতেই যথেষ্ট থাকে
       .select("-__v")
       .lean();
 
@@ -31,7 +31,6 @@ export default async function HomePage() {
 
   return (
     <>
-      {/* <PromoTicker /> */}
       <CategoryNav />
       <HomeClient products={products} />
     </>

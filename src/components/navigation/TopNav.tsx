@@ -19,7 +19,8 @@ export default function TopNav() {
   // আমাদের CartContext নিজে থেকেই মাউন্টিং হ্যান্ডেল করে, তাই এখানে আলাদা useEffect দরকার নেই
   const { cart } = useCart();
 
-  // সরাসরি কার্ট লেন্থ ব্যবহার করুন
+  // সরাসরি কার্ট লেন্থ ব্যবহার করুন.
+  
   // শুরুতে এটি 0 থাকবে (Server & Client match), পরে ডেটা লোড হলে আপডেট হবে
   const cartItemCount = cart?.items?.length || 0;
 
@@ -37,8 +38,8 @@ export default function TopNav() {
               <Image
                 src="/logo.svg"
                 alt="FishPoint logo"
-                width={36}
-                height={36}
+                width={32}
+                height={32}
                 priority
               />
             </div>
