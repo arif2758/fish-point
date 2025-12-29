@@ -15,7 +15,7 @@ async function getProducts() {
   try {
     const products = await ProductCollectionModel.find({ published: true })
       .sort({ isFeatured: -1, createdAt: -1 })
-      .limit(20) // একটু বেশি নিলাম যাতে hero + grid দুটোতেই যথেষ্ট থাকে
+      .limit(10) // একটু বেশি নিলাম যাতে hero + grid দুটোতেই যথেষ্ট থাকে
       .select("-__v")
       .lean();
 
