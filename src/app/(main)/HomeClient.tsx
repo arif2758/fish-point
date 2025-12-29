@@ -1,4 +1,3 @@
-// src\app\(main)\HomeClient.tsx
 "use client";
 
 import { IProduct } from "@/types";

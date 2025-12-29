@@ -1,4 +1,3 @@
-// src\app\(main)\page.tsx
 import { Metadata } from "next";
 import HomeClient from "./HomeClient";
 import dbConnect from "@/lib/dbConnect";
@@ -15,7 +14,7 @@ async function getProducts() {
   try {
     const products = await ProductCollectionModel.find({ published: true })
       .sort({ isFeatured: -1, createdAt: -1 })
-      .limit(10) // একটু বেশি নিলাম যাতে hero + grid দুটোতেই যথেষ্ট থাকে
+      .limit(10)
       .select("-__v")
       .lean();
 

@@ -88,12 +88,10 @@ export default function HeroSection({ featuredProducts }: HeroSectionProps) {
                 <Link
                   key={product.productId}
                   href={`/products/${product.slug}`}
-                  // 🛠️ FIX: এখানে 'pl-2 md:pl-4' দিয়ে গ্যাপ তৈরি করা হয়েছে।
-                  // এতে লুপের সময় গ্যাপ কখনোই হারাবে না।
                   className="flex-[0_0_40%] md:flex-[0_0_calc(25%)] min-w-0 pl-2 md:pl-4 group/card"
                 >
                   {/* Card Container */}
-                  <div className="relative aspect-4/3 w-full overflow-hidden rounded-xl bg-card border border-border/50 shadow-sm hover:shadow-md transition-shadow">
+                  <div className="relative aspect-4/3 w-full overflow-hidden rounded-md bg-card border border-border/50 shadow-sm hover:shadow-md transition-shadow">
                     {/* Image */}
                     <Image
                       src={product.mainImage}
@@ -114,7 +112,6 @@ export default function HeroSection({ featuredProducts }: HeroSectionProps) {
                           <h3 className="text-[10px] sm:text-sm md:text-lg font-bold text-white leading-tight mb-0.5 md:mb-1 line-clamp-1 drop-shadow-md">
                             {product.title}
                           </h3>
-                          {/* 👇 আপডেটেড লজিক: সাইজ থাকলে দেখাবে, না থাকলে ডিফল্ট টেক্সট */}
                           <p className="text-[8px] sm:text-[10px] md:text-sm text-gray-200 line-clamp-1 drop-shadow-sm">
                             {product.fishSize
                               ? `${product.fishSize} সাইজের`
