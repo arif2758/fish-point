@@ -606,42 +606,51 @@ export default function ProductDetailClient({
       )}
 
       {/* Mobile Bottom Bar - Improved Layout */}
-      <div className="fixed bottom-0 left-0 right-0 z-50 bg-card/80 backdrop-blur-[30px] border-t border-border/40 p-3 lg:hidden shadow-2xl">
-        <div className="container mx-auto">
-          <div className="flex items-center gap-2.5">
-            {/* Quantity Selector - Compact */}
+      <div className="fixed bottom-0 left-0 right-0 z-50 bg-card/90 backdrop-blur-[30px] border-t border-border/20 p-3 lg:hidden shadow-[0_-8px_30px_rgb(0,0,0,0.12)]">
+        <div className="container mx-auto max-w-lg">
+          <div className="flex items-center gap-2">
+            {/* Price section - New: Show price separate if space is tight */}
             <div className="shrink-0">
               <QuantitySelector
                 quantity={quantity}
                 setQuantity={setQuantity}
                 min={product.minOrderKg}
                 max={product.maxOrderKg}
-                className="w-28 h-10"
+                variant="compact"
+                className="bg-secondary/40 h-10 px-1.5 rounded-xl border border-border/10"
               />
             </div>
 
-            {/* Order Button - Takes Remaining Space */}
+            {/* Order Button - Robust Flex handling */}
             <Button
               size="lg"
               className={cn(
-                "flex-1 h-10 rounded-full font-semibold text-sm shadow-lg hover:shadow-xl transition-all min-w-0",
-                justAdded && "bg-green-600 hover:bg-green-600"
+                "flex-1 h-10 rounded-full font-bold text-sm shadow-md transition-all active:scale-95 group overflow-hidden px-2",
+                justAdded
+                  ? "bg-green-600 hover:bg-green-600"
+                  : "bg-primary shadow-primary/20"
               )}
               disabled={product.stockKg === 0}
               onClick={handleAddToCart}
             >
-              {justAdded ? (
-                <>
-                  <Check className="mr-1.5 size-4" />
-                  <span className="truncate">যোগ হয়েছে</span>
-                </>
-              ) : product.stockKg > 0 ? (
-                <span className="truncate">
-                  অর্ডার করুন · {formatPrice(totalPrice)}
-                </span>
-              ) : (
-                "স্টক নেই"
-              )}
+              <div className="flex items-center justify-center gap-1 w-full">
+                {justAdded ? (
+                  <>
+                    <Check className="size-4 shrink-0" />
+                    <span className="truncate">যোগ হয়েছে</span>
+                  </>
+                ) : product.stockKg > 0 ? (
+                  <>
+                    <span className="truncate">অর্ডার করুন</span>
+                    <span className="shrink-0 opacity-40 mx-0.5">•</span>
+                    <span className="shrink-0 font-black tabular-nums">
+                      {formatPrice(totalPrice)}
+                    </span>
+                  </>
+                ) : (
+                  <span className="truncate">স্টক নেই</span>
+                )}
+              </div>
             </Button>
           </div>
         </div>
