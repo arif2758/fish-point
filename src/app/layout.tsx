@@ -45,15 +45,15 @@ export const metadata: Metadata = {
       {
         url: "/fish-point-og.png",
         width: 1200,
-        height: 630,
+        height: 630, 
       },
     ],
     type: "website",
   },
   twitter: {
     card: "summary_large_image",
-    title: "Fish Point - সেরা তাজা মাছের বাজার",
-    description: "অনলাইনে অর্ডার করুন তাজা মাছ। ২০ মিনিটে হোম ডেলিভারি।",
+    title: "Fish Point - রেডি টু কুক",
+    description: "মাছে-ভাতে বাঙ্গালি। প্রিমিয়াম কোয়ালিটি, দ্রুত ডেলিভারি।",
     images: ["/fish-point-og.png"],
   },
 };

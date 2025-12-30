@@ -27,11 +27,14 @@ import QuantitySelector from "@/components/products/QuantitySelector";
 import { calculateTotalPrice, formatPrice } from "@/lib/priceUtils";
 import { useCart } from "@/contexts/CartContext";
 import type { CartItem } from "@/types/cart";
+import ProductCard from "@/components/products/ProductCard";
 
 export default function ProductDetailClient({
   product,
+  relatedProducts,
 }: {
   product: IProduct;
+  relatedProducts: IProduct[];
 }) {
   const [mainImage, setMainImage] = useState(product.mainImage);
   const [quantity, setQuantity] = useState(product.minOrderKg);
@@ -581,36 +584,66 @@ export default function ProductDetailClient({
         </div>
       </main>
 
-      {/* Mobile Bottom Bar */}
+      {/* Related Products Section */}
+      {relatedProducts.length > 0 && (
+        <section className="container mx-auto px-4 py-8 pb-24 lg:pb-12">
+          <div className="mb-6">
+            <h2 className="text-xl font-bold mb-2">আরও দেখুন</h2>
+            <p className="text-sm text-muted-foreground">
+              একই ধরনের অন্যান্য মাছ
+            </p>
+          </div>
+
+          <div className="grid grid-cols-1 sm:grid-cols-2 md:grid-cols-3 lg:grid-cols-4 gap-4">
+            {relatedProducts.map((relatedProduct) => (
+              <ProductCard
+                key={relatedProduct.productId}
+                product={relatedProduct}
+              />
+            ))}
+          </div>
+        </section>
+      )}
+
+      {/* Mobile Bottom Bar - Improved Layout */}
       <div className="fixed bottom-0 left-0 right-0 z-50 bg-card/80 backdrop-blur-[30px] border-t border-border/40 p-3 lg:hidden shadow-2xl">
-        <div className="container mx-auto flex items-center gap-2">
-          <QuantitySelector
-            quantity={quantity}
-            setQuantity={setQuantity}
-            min={product.minOrderKg}
-            max={product.maxOrderKg}
-            className="w-24 h-10"
-          />
-          <Button
-            size="lg"
-            className={cn(
-              "flex-1 h-10 rounded-full font-semibold text-sm shadow-lg hover:shadow-xl transition-all",
-              justAdded && "bg-green-600 hover:bg-green-600"
-            )}
-            disabled={product.stockKg === 0}
-            onClick={handleAddToCart}
-          >
-            {justAdded ? (
-              <>
-                <Check className="mr-2 size-4" />
-                যোগ হয়েছে
-              </>
-            ) : product.stockKg > 0 ? (
-              `অর্ডার করুন · ${formatPrice(totalPrice)}`
-            ) : (
-              "স্টক নেই"
-            )}
-          </Button>
+        <div className="container mx-auto">
+          <div className="flex items-center gap-2.5">
+            {/* Quantity Selector - Compact */}
+            <div className="shrink-0">
+              <QuantitySelector
+                quantity={quantity}
+                setQuantity={setQuantity}
+                min={product.minOrderKg}
+                max={product.maxOrderKg}
+                className="w-28 h-10"
+              />
+            </div>
+
+            {/* Order Button - Takes Remaining Space */}
+            <Button
+              size="lg"
+              className={cn(
+                "flex-1 h-10 rounded-full font-semibold text-sm shadow-lg hover:shadow-xl transition-all min-w-0",
+                justAdded && "bg-green-600 hover:bg-green-600"
+              )}
+              disabled={product.stockKg === 0}
+              onClick={handleAddToCart}
+            >
+              {justAdded ? (
+                <>
+                  <Check className="mr-1.5 size-4" />
+                  <span className="truncate">যোগ হয়েছে</span>
+                </>
+              ) : product.stockKg > 0 ? (
+                <span className="truncate">
+                  অর্ডার করুন · {formatPrice(totalPrice)}
+                </span>
+              ) : (
+                "স্টক নেই"
+              )}
+            </Button>
+          </div>
         </div>
       </div>
     </>

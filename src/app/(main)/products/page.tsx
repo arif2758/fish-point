@@ -4,6 +4,7 @@ import ProductCollectionModel from "@/models/ProductCollection";
 import { IProduct } from "@/types";
 import ProductsPageClient from "./ProductsPageClient";
 import CategoryNav from "@/components/navigation/CategoryNav";
+import Footer from "@/components/Footer";
 
 export const metadata: Metadata = {
   title: "তাজা মাছ | সকালে তাজা কাটিং | 20 মিনিটে ডেলিভারি",
@@ -33,6 +34,7 @@ export default async function ProductsPage() {
     <>
       <CategoryNav />
       <ProductsPageClient products={products} />
+      <Footer />
     </>
   );
 }

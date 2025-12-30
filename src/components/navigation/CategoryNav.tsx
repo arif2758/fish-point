@@ -1,7 +1,6 @@
-// src/components/navigation/CategoryNav.tsx
 "use client";
 
-import { useRouter, useSearchParams, usePathname } from "next/navigation"; // ✅ usePathname যুক্ত করা হয়েছে
+import { useRouter, useSearchParams, usePathname } from "next/navigation";
 import { ChevronLeft, ChevronRight } from "lucide-react";
 import { Button } from "@/components/ui/button";
 import { useState, useEffect, useRef } from "react";
@@ -31,7 +30,7 @@ const CATEGORIES = [
 
 export default function CategoryNav() {
   const router = useRouter();
-  const pathname = usePathname(); // ✅ বর্তমান পাথ পাওয়ার জন্য
+  const pathname = usePathname();
   const searchParams = useSearchParams();
   const scrollContainerRef = useRef<HTMLDivElement>(null);
   const [showLeftArrow, setShowLeftArrow] = useState(false);
@@ -93,10 +92,8 @@ export default function CategoryNav() {
     }
   };
 
-  // ✅ লজিক আপডেট করা হয়েছে
   const isCategoryActive = (categoryValue: string) => {
     if (categoryValue === "all") {
-      // শুধুমাত্র তখনই Active হবে যখন ইউজার '/products' পেজে আছে এবং অন্য কোনো ফিল্টার নেই
       return (
         pathname === "/products" &&
         !currentFishType &&
@@ -111,9 +108,9 @@ export default function CategoryNav() {
   };
 
   return (
-    <nav className="bg-card/30 backdrop-blur-[25px] backdrop-saturate-150 relative overflow-hidden">
-      {/* Left Mask */}
-      <div className="absolute left-0 top-0 bottom-0 w-14 sm:w-16 bg-card/30 backdrop-blur-[25px] backdrop-saturate-150 z-10 pointer-events-none hidden sm:block" />
+    <nav className="bg-card/40 backdrop-blur-xl border-b border-border/40 relative overflow-hidden">
+      {/* Left Gradient Fade */}
+      <div className="absolute left-0 top-0 bottom-0 w-12 sm:w-16 bg-linear-to-r from-card/80 via-card/40 to-transparent z-10 pointer-events-none" />
 
       {/* Left Arrow */}
       {showLeftArrow && (
@@ -121,9 +118,9 @@ export default function CategoryNav() {
           variant="ghost"
           size="icon"
           onClick={() => scroll("left")}
-          className="absolute left-2 sm:left-4 top-1/2 -translate-y-1/2 z-30 h-9 w-9 sm:h-10 sm:w-10 rounded-full bg-card backdrop-blur-[30px] hover:bg-card/95 shadow-xl hover:shadow-2xl border-2 border-border/60 hidden sm:flex transition-all duration-200"
+          className="absolute left-1 sm:left-2 top-1/2 -translate-y-1/2 z-20 h-8 w-8 sm:h-9 sm:w-9 rounded-full bg-card/90 backdrop-blur-md hover:bg-card shadow-lg border border-border/40 transition-all duration-200 hover:scale-105"
         >
-          <ChevronLeft className="h-5 w-5" />
+          <ChevronLeft className="h-4 w-4" />
         </Button>
       )}
 
@@ -132,7 +129,7 @@ export default function CategoryNav() {
         ref={scrollContainerRef}
         className="overflow-x-auto [&::-webkit-scrollbar]:hidden [-ms-overflow-style:none] [scrollbar-width:none] scroll-smooth"
       >
-        <div className="flex space-x-2 sm:space-x-3 p-2 sm:p-3 px-4 sm:px-20">
+        <div className="flex items-center gap-2 py-3 px-3 sm:px-16">
           {CATEGORIES.map((cat) => {
             const isActive = isCategoryActive(cat.value);
 
@@ -142,13 +139,13 @@ export default function CategoryNav() {
                 variant="ghost"
                 size="sm"
                 className={`
-                  rounded-full px-3 sm:px-5 text-xs h-8 sm:h-9 
+                  rounded-full px-4 sm:px-5 text-xs h-8 sm:h-9
                   transition-all duration-300 font-medium shrink-0 whitespace-nowrap
                   backdrop-blur-md
                   ${
                     isActive
-                      ? "bg-primary text-primary-foreground shadow-lg shadow-primary/25 hover:bg-primary/90 hover:shadow-xl hover:shadow-primary/30 border-primary/20 hover:text-primary-foreground"
-                      : "bg-secondary/60 shadow-md text-foreground border border-border/40 hover:shadow-lg hover:border-border/60 hover:bg-secondary/80"
+                      ? "bg-primary text-primary-foreground shadow-md hover:bg-primary/90 hover:shadow-lg border border-primary/20"
+                      : "bg-secondary/60 text-foreground border border-border/40 hover:bg-secondary/80 hover:border-border/60 shadow-sm hover:shadow-md"
                   }
                 `}
                 onClick={() => handleCategoryClick(cat.value)}
@@ -160,8 +157,8 @@ export default function CategoryNav() {
         </div>
       </div>
 
-      {/* Right Mask */}
-      <div className="absolute right-0 top-0 bottom-0 w-14 sm:w-16 bg-card/30 backdrop-blur-[25px] backdrop-saturate-150 z-10 pointer-events-none hidden sm:block" />
+      {/* Right Gradient Fade */}
+      <div className="absolute right-0 top-0 bottom-0 w-12 sm:w-16 bg-linear-to-l from-card/80 via-card/40 to-transparent z-10 pointer-events-none" />
 
       {/* Right Arrow */}
       {showRightArrow && (
@@ -169,9 +166,9 @@ export default function CategoryNav() {
           variant="ghost"
           size="icon"
           onClick={() => scroll("right")}
-          className="absolute right-2 sm:right-4 top-1/2 -translate-y-1/2 z-30 h-9 w-9 sm:h-10 sm:w-10 rounded-full bg-card backdrop-blur-[30px] hover:bg-card/95 shadow-xl hover:shadow-2xl border-2 border-border/60 hidden sm:flex transition-all duration-200"
+          className="absolute right-1 sm:right-2 top-1/2 -translate-y-1/2 z-20 h-8 w-8 sm:h-9 sm:w-9 rounded-full bg-card/90 backdrop-blur-md hover:bg-card shadow-lg border border-border/40 transition-all duration-200 hover:scale-105"
         >
-          <ChevronRight className="h-5 w-5" />
+          <ChevronRight className="h-4 w-4" />
         </Button>
       )}
     </nav>

@@ -4,22 +4,27 @@
 import { useCart } from "@/contexts/CartContext";
 import { Button } from "@/components/ui/button";
 import { Badge } from "@/components/ui/badge";
-import { Separator } from "@/components/ui/separator";
+
 import Link from "next/link";
 import Image from "next/image";
 import {
   Trash2,
-  Plus,
-  Minus,
   ShoppingBag,
   ArrowRight,
   PackageX,
+  CreditCard,
+  Truck,
+  ShieldCheck,
+  Boxes,
 } from "lucide-react";
 import { formatPrice, calculateTotalPrice } from "@/lib/priceUtils";
 import QuantitySelector from "@/components/products/QuantitySelector";
 
 export default function CartPageClient() {
   const { cart, updateQuantity, removeItem, clearCart } = useCart();
+
+  const deliveryCharge = 30;
+  const grandTotal = cart.total + deliveryCharge;
 
   if (cart.items.length === 0) {
     return (
@@ -48,320 +53,329 @@ export default function CartPageClient() {
   }
 
   return (
-    <div className="container mx-auto px-4 py-8 pb-32 lg:pb-8">
-      <div className="grid lg:grid-cols-3 gap-8">
+    <div className="container mx-auto px-4 py-8 pb-32 lg:pb-12">
+      <div className="grid lg:grid-cols-3 gap-8 items-start">
         {/* Left: Cart Items */}
-        <section className="lg:col-span-2 space-y-4" aria-label="কার্ট আইটেম">
-          <div className="flex items-center justify-between mb-6">
-            <h1 className="text-2xl sm:text-3xl font-bold">
+        <section className="lg:col-span-2 space-y-6" aria-label="কার্ট আইটেম">
+          <div className="flex items-center justify-between">
+            <h1 className="text-2xl sm:text-4xl font-black tracking-tight flex items-baseline gap-3">
               আপনার কার্ট
-              <Badge variant="secondary" className="ml-3 text-sm">
-                {cart.items.length} আইটেম
-              </Badge>
+              <span className="text-lg font-medium text-muted-foreground">
+                ({cart.items.length}টি পণ্য)
+              </span>
             </h1>
 
-            {cart.items.length > 0 && (
-              <Button
-                variant="ghost"
-                size="sm"
-                onClick={clearCart}
-                className="text-destructive hover:text-destructive hover:bg-destructive/10 rounded-full"
-              >
-                <Trash2 className="mr-2 size-4" />
-                সব মুছুন
-              </Button>
-            )}
+            <Button
+              variant="ghost"
+              size="sm"
+              onClick={clearCart}
+              className="text-destructive hover:text-destructive hover:bg-destructive/10 rounded-full h-9 px-4"
+            >
+              <Trash2 className="mr-2 size-4" />
+              সব মুছুন
+            </Button>
           </div>
 
-          {cart.items.map((item) => {
-            const itemTotal = calculateTotalPrice(
-              item.product.salePrice,
-              item.quantity
-            );
+          <div className="space-y-4">
+            {cart.items.map((item) => {
+              const itemTotal = calculateTotalPrice(
+                item.product.salePrice,
+                item.quantity
+              );
+              const isPackage = item.product.category === "Package";
 
-            return (
-              <article
-                key={item.product.productId}
-                className="group relative flex gap-4 p-4 rounded-2xl border border-border/40 bg-card/40 backdrop-blur-[20px] hover:shadow-lg hover:border-border/60 transition-all duration-300"
-              >
-                {/* Product Image */}
-                <Link
-                  href={`/products/${item.product.slug}`}
-                  className="relative size-24 sm:size-28 shrink-0 overflow-hidden rounded-xl bg-muted/30"
+              return (
+                <article
+                  key={item.product.productId}
+                  className="group relative flex gap-4 p-4 sm:p-5 rounded-3xl border border-border/40 bg-card/40 backdrop-blur-[20px] hover:shadow-xl hover:border-border/60 transition-all duration-300 overflow-hidden"
                 >
-                  <Image
-                    src={item.product.mainImage}
-                    alt={item.product.title}
-                    fill
-                    className="object-cover transition-transform duration-500 group-hover:scale-110"
-                    sizes="112px"
-                  />
-                  {item.product.discountPercentage > 0 && (
-                    <Badge
-                      variant="destructive"
-                      className="absolute top-1 left-1 text-[10px] px-1.5 py-0.5 backdrop-blur-lg bg-orange-600/90 dark:bg-orange-700/95"
-                    >
-                      -{item.product.discountPercentage}%
-                    </Badge>
+                  {/* Subtle Background Accent for Packages */}
+                  {isPackage && (
+                    <div className="absolute inset-0 bg-linear-to-br from-primary/5 via-transparent to-transparent pointer-events-none" />
                   )}
-                </Link>
 
-                {/* Product Info */}
-                <div className="flex-1 min-w-0">
-                  <Link href={`/products/${item.product.slug}`}>
-                    <h3 className="font-semibold text-sm sm:text-base leading-tight mb-1 hover:text-primary transition-colors line-clamp-2">
-                      {item.product.title}
-                    </h3>
+                  {/* Product Image */}
+                  <Link
+                    href={
+                      isPackage
+                        ? `/packages/${item.product.slug}`
+                        : `/products/${item.product.slug}`
+                    }
+                    className="relative size-24 sm:size-32 shrink-0 overflow-hidden rounded-2xl bg-muted/30 aspect-square"
+                  >
+                    <Image
+                      src={item.product.mainImage}
+                      alt={item.product.title}
+                      fill
+                      className="object-cover transition-transform duration-500 group-hover:scale-110"
+                      sizes="(max-width: 640px) 96px, 128px"
+                    />
+                    {item.product.discountPercentage > 0 && (
+                      <Badge
+                        variant="destructive"
+                        className="absolute top-2 left-2 text-[10px] px-2 py-0.5 font-bold backdrop-blur-md bg-orange-600/90 border-none shadow-sm"
+                      >
+                        -{item.product.discountPercentage}%
+                      </Badge>
+                    )}
                   </Link>
 
-                  {/* Selected Options */}
-                  {(item.selectedOptions.cuttingSize ||
-                    item.selectedOptions.headCut ||
-                    item.selectedOptions.cuttingStyle) && (
-                    <div className="flex flex-wrap gap-1.5 mb-2">
-                      {item.selectedOptions.cuttingSize && (
-                        <Badge
-                          variant="secondary"
-                          className="text-[10px] px-2 py-0.5"
-                        >
-                          {item.selectedOptions.cuttingSize}
-                        </Badge>
-                      )}
-                      {item.selectedOptions.headCut && (
-                        <Badge
-                          variant="secondary"
-                          className="text-[10px] px-2 py-0.5"
-                        >
-                          {item.selectedOptions.headCut} টুকরা
-                        </Badge>
-                      )}
-                      {item.selectedOptions.cuttingStyle &&
-                        item.selectedOptions.cuttingStyle !== "none" && (
+                  {/* Product Info */}
+                  <div className="flex-1 min-w-0 flex flex-col justify-between py-1">
+                    <div>
+                      <div className="flex items-center gap-2 mb-1.5 flex-wrap">
+                        {isPackage ? (
+                          <Badge className="bg-primary/10 text-primary border-primary/20 hover:bg-primary/20 text-[10px] px-2 py-0 font-bold uppercase tracking-wider flex items-center gap-1">
+                            <Boxes className="size-3" />
+                            সাবস্ক্রিপশন
+                          </Badge>
+                        ) : (
                           <Badge
-                            variant="secondary"
-                            className="text-[10px] px-2 py-0.5"
+                            variant="outline"
+                            className="text-[10px] border-border/60 text-muted-foreground"
                           >
-                            {item.selectedOptions.cuttingStyle}
+                            {item.product.category}
                           </Badge>
                         )}
-                    </div>
-                  )}
+                        <Badge
+                          variant="secondary"
+                          className="bg-green-500/10 text-green-600 border-none text-[10px]"
+                        >
+                          ইন স্টক
+                        </Badge>
+                      </div>
 
-                  {/* Price & Quantity */}
-                  <div className="flex items-center justify-between gap-3 mt-auto">
-                    <div className="flex items-baseline gap-2">
-                      <span className="text-lg sm:text-xl font-bold text-primary">
-                        {formatPrice(item.product.salePrice)}
-                      </span>
-                      <span className="text-xs text-muted-foreground">
-                        /কেজি
-                      </span>
-                    </div>
-
-                    {/* Quantity Controls - Desktop */}
-                    <div className="hidden sm:flex items-center gap-2">
-                      <Button
-                        variant="outline"
-                        size="icon"
-                        className="size-8 rounded-full"
-                        onClick={() =>
-                          updateQuantity(
-                            item.product.productId,
-                            Math.max(
-                              item.product.minOrderKg,
-                              item.quantity - item.product.minOrderKg
-                            )
-                          )
+                      <Link
+                        href={
+                          isPackage
+                            ? `/packages/${item.product.slug}`
+                            : `/products/${item.product.slug}`
                         }
-                        disabled={item.quantity <= item.product.minOrderKg}
                       >
-                        <Minus className="size-3" />
-                      </Button>
+                        <h3 className="font-bold text-base sm:text-xl leading-tight hover:text-primary transition-colors line-clamp-2 mb-2">
+                          {item.product.title}
+                        </h3>
+                      </Link>
 
-                      <span className="font-semibold min-w-12 text-center">
-                        {item.quantity} কেজি
-                      </span>
+                      {/* Selected Options - Enhanced */}
+                      {(item.selectedOptions.cuttingSize ||
+                        item.selectedOptions.headCut ||
+                        item.selectedOptions.cuttingStyle) && (
+                        <div className="flex flex-wrap gap-1.5 mt-2">
+                          {item.selectedOptions.cuttingSize && (
+                            <span className="text-[10px] sm:text-xs text-muted-foreground bg-muted/50 px-2 py-0.5 rounded-md border border-border/40">
+                              সাইজ:{" "}
+                              <strong>
+                                {item.selectedOptions.cuttingSize}
+                              </strong>
+                            </span>
+                          )}
+                          {item.selectedOptions.cuttingStyle &&
+                            item.selectedOptions.cuttingStyle !== "none" && (
+                              <span className="text-[10px] sm:text-xs text-muted-foreground bg-muted/50 px-2 py-0.5 rounded-md border border-border/40">
+                                কাটিং:{" "}
+                                <strong>
+                                  {item.selectedOptions.cuttingStyle}
+                                </strong>
+                              </span>
+                            )}
+                        </div>
+                      )}
+                    </div>
 
-                      <Button
-                        variant="outline"
-                        size="icon"
-                        className="size-8 rounded-full"
-                        onClick={() =>
-                          updateQuantity(
-                            item.product.productId,
-                            Math.min(
-                              item.product.maxOrderKg,
-                              item.quantity + item.product.minOrderKg
-                            )
-                          )
-                        }
-                        disabled={item.quantity >= item.product.maxOrderKg}
-                      >
-                        <Plus className="size-3" />
-                      </Button>
+                    {/* Price & Quantity Area */}
+                    <div className="flex items-end justify-between gap-4 mt-4">
+                      <div className="flex flex-col">
+                        <div className="flex items-baseline gap-2">
+                          <span className="text-xl sm:text-2xl font-black text-primary">
+                            {formatPrice(item.product.salePrice)}
+                          </span>
+                          <span className="text-xs text-muted-foreground font-medium">
+                            /কেজি
+                          </span>
+                        </div>
+                        {item.product.salePrice < item.product.basePrice && (
+                          <span className="text-xs text-muted-foreground line-through decoration-destructive/50">
+                            {formatPrice(item.product.basePrice)}
+                          </span>
+                        )}
+                      </div>
+
+                      {/* Desktop Quantity Selector */}
+                      <div className="hidden sm:block">
+                        <QuantitySelector
+                          quantity={item.quantity}
+                          min={item.product.minOrderKg}
+                          max={item.product.maxOrderKg}
+                          setQuantity={(val) =>
+                            updateQuantity(item.product.productId, val)
+                          }
+                          step={
+                            item.product.minOrderKg >= 1
+                              ? 1
+                              : item.product.minOrderKg
+                          }
+                        />
+                      </div>
                     </div>
                   </div>
 
-                  {/* Mobile Quantity + Total */}
-                  <div className="sm:hidden flex items-center justify-between mt-3 pt-3 border-t border-border/40">
-                    <div className="flex items-center gap-2">
-                      <Button
-                        variant="outline"
-                        size="icon"
-                        className="size-7 rounded-full"
-                        onClick={() =>
-                          updateQuantity(
-                            item.product.productId,
-                            Math.max(
-                              item.product.minOrderKg,
-                              item.quantity - item.product.minOrderKg
-                            )
-                          )
-                        }
-                        disabled={item.quantity <= item.product.minOrderKg}
-                      >
-                        <Minus className="size-3" />
-                      </Button>
+                  {/* Desktop Total Price Area */}
+                  <div className="hidden flex-col items-end justify-between sm:flex pl-4 min-w-[120px] border-l border-border/20">
+                    <Button
+                      variant="ghost"
+                      size="icon"
+                      className="size-10 rounded-full text-muted-foreground hover:text-destructive hover:bg-destructive/10 transition-colors"
+                      onClick={() => removeItem(item.product.productId)}
+                      aria-label={`${item.product.title} মুছুন`}
+                    >
+                      <Trash2 className="size-5" />
+                    </Button>
 
-                      <span className="font-semibold text-sm min-w-10 text-center">
-                        {item.quantity} কেজি
-                      </span>
-
-                      <Button
-                        variant="outline"
-                        size="icon"
-                        className="size-7 rounded-full"
-                        onClick={() =>
-                          updateQuantity(
-                            item.product.productId,
-                            Math.min(
-                              item.product.maxOrderKg,
-                              item.quantity + item.product.minOrderKg
-                            )
-                          )
-                        }
-                        disabled={item.quantity >= item.product.maxOrderKg}
-                      >
-                        <Plus className="size-3" />
-                      </Button>
+                    <div className="text-right pb-1">
+                      <p className="text-[10px] font-bold text-muted-foreground uppercase tracking-widest mb-1">
+                        সাবটোটাল
+                      </p>
+                      <p className="text-2xl font-black text-primary tracking-tight">
+                        {formatPrice(itemTotal)}
+                      </p>
                     </div>
-
-                    <span className="text-base font-bold text-primary">
-                      {formatPrice(itemTotal)}
-                    </span>
                   </div>
-                </div>
 
-                {/* Desktop Total Price */}
-                <div className="hidden sm:flex flex-col items-end justify-between">
+                  {/* Mobile Delete */}
                   <Button
                     variant="ghost"
                     size="icon"
-                    className="size-8 rounded-full text-destructive hover:text-destructive hover:bg-destructive/10"
+                    className="sm:hidden absolute top-2 right-2 size-10 rounded-full text-muted-foreground/50 hover:text-destructive bg-card/20 backdrop-blur-sm"
                     onClick={() => removeItem(item.product.productId)}
                     aria-label={`${item.product.title} মুছুন`}
                   >
                     <Trash2 className="size-4" />
                   </Button>
-
-                  <div className="text-right">
-                    <p className="text-xs text-muted-foreground mb-1">মোট</p>
-                    <p className="text-xl font-bold text-primary">
-                      {formatPrice(itemTotal)}
-                    </p>
-                  </div>
-                </div>
-
-                {/* Mobile Remove Button */}
-                <Button
-                  variant="ghost"
-                  size="icon"
-                  className="sm:hidden absolute top-2 right-2 size-8 rounded-full text-destructive hover:text-destructive hover:bg-destructive/10"
-                  onClick={() => removeItem(item.product.productId)}
-                  aria-label={`${item.product.title} মুছুন`}
-                >
-                  <Trash2 className="size-4" />
-                </Button>
-              </article>
-            );
-          })}
+                </article>
+              );
+            })}
+          </div>
         </section>
 
-        {/* Right: Order Summary */}
-        <aside className="lg:col-span-1" aria-label="অর্ডার সারাংশ">
-          <div className="sticky top-20 rounded-2xl border border-border/40 bg-card/40 backdrop-blur-[20px] p-6 shadow-lg">
-            <h2 className="text-xl font-bold mb-6">অর্ডার সারাংশ</h2>
+        {/* Right: Order Summary (Sticky Container) */}
+        <aside className="lg:col-span-1 space-y-4" aria-label="অর্ডার সারাংশ">
+          <div className="sticky top-20 flex flex-col gap-4">
+            {/* Summary Card */}
+            <div className="rounded-3xl border border-border/40 bg-card/40 backdrop-blur-[20px] p-6 sm:p-8 shadow-xl relative overflow-hidden ring-1 ring-white/5">
+              {/* Decorative Gradient */}
+              <div className="absolute top-0 right-0 size-32 bg-primary/10 rounded-full blur-3xl -mr-16 -mt-16 pointer-events-none" />
 
-            <div className="space-y-3 mb-6">
-              <div className="flex justify-between text-sm">
-                <span className="text-muted-foreground">সাবটোটাল</span>
-                <span className="font-semibold">{formatPrice(cart.total)}</span>
+              <h2 className="text-2xl font-black mb-8 border-b border-border/40 pb-4">
+                অর্ডার সারাংশ
+              </h2>
+
+              <div className="space-y-4 mb-8">
+                <div className="flex justify-between items-center text-sm sm:text-base">
+                  <span className="text-muted-foreground font-medium">
+                    সাবটোটাল
+                  </span>
+                  <span className="font-bold">{formatPrice(cart.total)}</span>
+                </div>
+
+                <div className="flex justify-between items-center text-sm sm:text-base">
+                  <span className="text-muted-foreground font-medium">
+                    ডেলিভারি চার্জ
+                  </span>
+                  <span className="font-bold">
+                    {formatPrice(deliveryCharge)}
+                  </span>
+                </div>
+
+                <div className="pt-4 mt-4 border-t border-border/40 flex justify-between items-end">
+                  <div>
+                    <span className="text-sm font-bold text-muted-foreground uppercase tracking-wider block mb-1">
+                      সর্বমোট
+                    </span>
+                    <span className="text-3xl font-black text-primary tracking-tight">
+                      {formatPrice(grandTotal)}
+                    </span>
+                  </div>
+                </div>
               </div>
 
-              <div className="flex justify-between text-sm">
-                <span className="text-muted-foreground">ডেলিভারি চার্জ</span>
-                <span className="font-semibold text-green-600">ফ্রি</span>
-              </div>
+              <Link href="/checkout">
+                <Button
+                  size="lg"
+                  className="w-full h-14 rounded-2xl text-lg font-black bg-primary hover:bg-primary/90 shadow-lg shadow-primary/20 transition-all active:scale-[0.98] group"
+                >
+                  চেকআউট করুন
+                  <ArrowRight className="ml-2 size-5 transition-transform group-hover:translate-x-1" />
+                </Button>
+              </Link>
 
-              <Separator className="bg-border/40" />
-
-              <div className="flex justify-between text-base">
-                <span className="font-semibold">সর্বমোট</span>
-                <span className="text-2xl font-bold text-primary">
-                  {formatPrice(cart.total)}
-                </span>
+              <div className="mt-6 space-y-3">
+                <div className="flex items-center gap-3 text-xs text-muted-foreground bg-muted/30 p-3 rounded-xl">
+                  <Truck className="size-4 text-primary shrink-0" />
+                  <p>
+                    ঢাকার ভেতরে{" "}
+                    <span className="font-bold text-foreground">
+                      ২০-৪০ মিনিটে
+                    </span>{" "}
+                    দ্রুত ডেলিভারি!
+                  </p>
+                </div>
               </div>
             </div>
 
-            <Link href="/checkout">
-              <Button
-                size="lg"
-                className="w-full rounded-full shadow-lg hover:shadow-xl transition-all"
-              >
-                চেকআউট করুন
-                <ArrowRight className="ml-2 size-5" />
-              </Button>
-            </Link>
-
-            <p className="text-xs text-muted-foreground text-center mt-4">
-              ২০-৩০ মিনিটে ডেলিভারি
-            </p>
-          </div>
-
-          {/* Trust Badges */}
-          <div className="mt-6 rounded-2xl border border-border/40 bg-card/40 backdrop-blur-[20px] p-4">
-            <div className="grid grid-cols-2 gap-3 text-xs">
-              <div className="flex items-center gap-2">
-                <div className="size-8 rounded-full bg-green-500/10 flex items-center justify-center shrink-0">
-                  <span className="text-green-600">✓</span>
+            {/* Trust Badges - Inside Sticky Container */}
+            <div className="rounded-2xl border border-border/40 bg-card/20 backdrop-blur-md p-5 flex flex-col gap-4 shadow-sm">
+              <h4 className="text-[10px] font-bold text-muted-foreground uppercase tracking-[0.2em]">
+                আমরা নিশ্চিত করছি
+              </h4>
+              <div className="grid grid-cols-2 gap-4">
+                <div className="flex flex-col gap-2">
+                  <div className="size-10 rounded-xl bg-primary/10 flex items-center justify-center text-primary">
+                    <ShieldCheck className="size-5" />
+                  </div>
+                  <div className="space-y-0.5">
+                    <p className="text-[11px] font-bold">তাজা গ্যারান্টি</p>
+                    <p className="text-[9px] text-muted-foreground">
+                      ১০০% ক্যাশব্যাক
+                    </p>
+                  </div>
                 </div>
-                <span className="text-muted-foreground">তাজা গ্যারান্টি</span>
-              </div>
-              <div className="flex items-center gap-2">
-                <div className="size-8 rounded-full bg-blue-500/10 flex items-center justify-center shrink-0">
-                  <span className="text-blue-600">✓</span>
+                <div className="flex flex-col gap-2">
+                  <div className="size-10 rounded-xl bg-orange-500/10 flex items-center justify-center text-orange-600">
+                    <CreditCard className="size-5" />
+                  </div>
+                  <div className="space-y-0.5">
+                    <p className="text-[11px] font-bold">নিরাপদ পেমেন্ট</p>
+                    <p className="text-[9px] text-muted-foreground">
+                      SSL Secure
+                    </p>
+                  </div>
                 </div>
-                <span className="text-muted-foreground">নিরাপদ পেমেন্ট</span>
               </div>
             </div>
           </div>
         </aside>
       </div>
 
-      {/* Mobile Bottom Bar */}
-      <div className="fixed bottom-0 left-0 right-0 z-50 lg:hidden bg-card/80 backdrop-blur-[30px] border-t border-border/40 p-3 shadow-2xl">
-        <div className="container mx-auto flex items-center justify-between gap-3">
-          <div>
-            <p className="text-xs text-muted-foreground">সর্বমোট</p>
-            <p className="text-xl font-bold text-primary">
-              {formatPrice(cart.total)}
-            </p>
+      {/* Mobile Bottom Bar - Enhanced UX */}
+      <div className="fixed bottom-0 left-0 right-0 z-50 lg:hidden bg-card/90 backdrop-blur-2xl border-t border-primary/20 p-4 shadow-2xl safe-area-bottom">
+        <div className="container mx-auto flex items-center justify-between gap-5">
+          <div className="flex flex-col">
+            <span className="text-[10px] font-bold text-muted-foreground uppercase tracking-widest">
+              সর্বমোট
+            </span>
+            <span className="text-2xl font-black text-primary tracking-tight">
+              {formatPrice(grandTotal)}
+            </span>
           </div>
 
-          <Link href="/checkout" className="flex-1 max-w-xs">
-            <Button size="lg" className="w-full rounded-full shadow-lg">
-              চেকআউট করুন
-              <ArrowRight className="ml-2 size-5" />
+          <Link href="/checkout" className="flex-1">
+            <Button
+              size="lg"
+              className="w-full h-14 rounded-2xl text-base font-black shadow-xl shadow-primary/20 group"
+            >
+              চেকআউট
+              <ArrowRight className="ml-2 size-5 transition-transform group-hover:translate-x-1" />
             </Button>
           </Link>
         </div>

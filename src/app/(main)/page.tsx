@@ -3,6 +3,7 @@ import HomeClient from "./HomeClient";
 import dbConnect from "@/lib/dbConnect";
 import ProductCollectionModel from "@/models/ProductCollection";
 import CategoryNav from "@/components/navigation/CategoryNav";
+import Footer from "@/components/Footer";
 
 export const metadata: Metadata = {
   title: "Fish Point - সেরা তাজা মাছের বাজার",
@@ -32,6 +33,7 @@ export default async function HomePage() {
     <>
       <CategoryNav />
       <HomeClient products={products} />
+      <Footer />
     </>
   );
 }
