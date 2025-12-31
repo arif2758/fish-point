@@ -68,7 +68,6 @@ export default async function PackageDetailPage({ params }: Props) {
         products={data.products}
         allPackages={JSON.parse(JSON.stringify(allPackages))}
       />
-      <Footer />
     </>
   );
 }
