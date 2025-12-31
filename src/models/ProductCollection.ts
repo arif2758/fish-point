@@ -114,4 +114,3 @@ const ProductCollectionModel = (mongoose.models.ProductCollection ||
   )) as Model<IProductDocument>;
 
 export default ProductCollectionModel;
- 

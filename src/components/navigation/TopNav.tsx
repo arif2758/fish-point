@@ -157,11 +157,11 @@ export default function TopNav() {
                 </Button>
               </Link>
 
-              {/* User - Always Visible on Desktop/Tablet */}
+              {/* User - Always Visible */}
               <Button
                 variant="ghost"
                 size="icon"
-                className="shrink-0 h-9 w-9 hidden sm:flex rounded-full hover:bg-accent/50 transition-all hover:scale-105 active:scale-95"
+                className="shrink-0 h-9 w-9 flex rounded-full hover:bg-accent/50 transition-all hover:scale-105 active:scale-95"
                 aria-label="User account"
               >
                 <User className="size-4" />
@@ -183,12 +183,25 @@ export default function TopNav() {
               </Button>
             </div>
           </div>
+        </nav>
 
-          {/* Mobile Navigation */}
-          {mobileMenuOpen && (
-            <div className="lg:hidden border-t border-border/40 bg-card/60 backdrop-blur-xl animate-in slide-in-from-top-2 duration-300">
+        {/* Mobile Navigation Overlay - Moved out of <nav> to prevent backdrop-filter bugs */}
+        {mobileMenuOpen && (
+          <>
+            {/* Backdrop */}
+            <div
+              className="fixed inset-0 top-14 z-40 bg-black/60 animate-in fade-in duration-300 lg:hidden"
+              onClick={() => setMobileMenuOpen(false)}
+            />
+            {/* Menu Content */}
+            <div
+              className="absolute top-14 left-0 right-0 z-50 lg:hidden border-b border-border/40 bg-popover/95 backdrop-blur-2xl animate-in slide-in-from-top-4 duration-300 shadow-2xl"
+              style={{
+                backdropFilter: "blur(30px) saturate(180%)",
+              }}
+            >
               <nav
-                className="container mx-auto px-4 py-2 space-y-1"
+                className="container mx-auto px-4 py-4 space-y-1.5"
                 aria-label="Mobile navigation"
               >
                 {NAV_ITEMS.map((item) => {
@@ -201,21 +214,28 @@ export default function TopNav() {
                       href={item.href}
                       onClick={() => setMobileMenuOpen(false)}
                       className={cn(
-                        "flex items-center gap-2.5 px-3 py-2.5 rounded-lg text-sm font-medium transition-all duration-200",
+                        "flex items-center gap-3 px-4 py-3 rounded-xl text-sm font-medium transition-all duration-200",
                         active
-                          ? "text-primary bg-primary/10"
+                          ? "text-primary bg-primary/10 shadow-inner"
                           : "text-muted-foreground hover:text-foreground hover:bg-accent/50"
                       )}
                     >
-                      <Icon className="size-4" />
+                      <div
+                        className={cn(
+                          "flex size-8 items-center justify-center rounded-lg transition-colors",
+                          active ? "bg-primary/20" : "bg-accent/50"
+                        )}
+                      >
+                        <Icon className="size-4" />
+                      </div>
                       <span>{item.label}</span>
                     </Link>
                   );
                 })}
               </nav>
             </div>
-          )}
-        </nav>
+          </>
+        )}
 
         {/* Search Bar */}
         {showSearch && <SearchBar onClose={() => setShowSearch(false)} />}

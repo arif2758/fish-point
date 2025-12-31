@@ -1,6 +1,6 @@
 "use client";
 
-import { useState } from "react";
+import { useState, useRef } from "react";
 import Image from "next/image";
 import {
   Check,
@@ -23,25 +23,152 @@ import { IProduct } from "@/types";
 
 interface PackageDetailClientProps {
   pkg: IPackage;
+  products: IProduct[];
+  allPackages: IPackage[];
 }
 
-export default function PackageDetailClient({ pkg }: PackageDetailClientProps) {
+export default function PackageDetailClient({
+  pkg,
+  products,
+  allPackages,
+}: PackageDetailClientProps) {
   const { addToCart } = useCart();
   const [isAdded, setIsAdded] = useState(false);
 
+  // --- 1. Selection & Quantity State ---
+  const [selectedItems, setSelectedItems] = useState<Record<string, boolean>>(
+    pkg.items.reduce(
+      (acc, item) => ({ ...acc, [item.productId]: item.selectedByDefault }),
+      {}
+    )
+  );
+
+  const [quantities, setQuantities] = useState<Record<string, number>>(
+    pkg.items.reduce(
+      (acc, item) => ({ ...acc, [item.productId]: item.defaultKg }),
+      {}
+    )
+  );
+
+  // --- 2. Dynamic Price Calculation ---
+  const calculateTotal = () => {
+    let baseTotal = 0;
+    pkg.items.forEach((item) => {
+      if (selectedItems[item.productId]) {
+        const product = products.find((p) => p.productId === item.productId);
+        const qty = quantities[item.productId] || item.defaultKg || 0;
+
+        if (product && typeof product.basePrice === "number") {
+          baseTotal += product.basePrice * qty;
+        } else {
+          // Fallback if product not found or basePrice missing
+          // Distribute the package's base price across its items as a fallback
+          const fallbackPrice = (pkg.basePrice || 0) / (pkg.items.length || 1);
+          baseTotal += fallbackPrice * qty;
+        }
+      }
+    });
+
+    const discount = pkg.discountPercentage || 0;
+    const saleTotal = baseTotal * (1 - discount / 100);
+
+    return {
+      base: Math.max(0, baseTotal),
+      sale: Math.max(0, saleTotal),
+      savings: Math.max(0, baseTotal - saleTotal),
+    };
+  };
+
+  const totals = calculateTotal();
+
+  // --- 3. Customization Handlers ---
+  const toggleItem = (productId: string) => {
+    const itemConfig = pkg.items.find((i) => i.productId === productId);
+    if (itemConfig?.isOptional) {
+      setSelectedItems((prev) => ({ ...prev, [productId]: !prev[productId] }));
+    }
+  };
+
+  const updateQuantity = (productId: string, delta: number) => {
+    setQuantities((prev) => {
+      const current = prev[productId] || 0;
+      const next = Math.max(0.25, current + delta);
+      return { ...prev, [productId]: next };
+    });
+  };
+
+  // --- 4. Tier Selection (Smart UX) ---
+  const customIdCounter = useRef(0);
+
+  const applyTier = (tier: "essential" | "standard" | "ultimate") => {
+    const newSelection: Record<string, boolean> = {};
+    const newQuantities: Record<string, number> = {};
+
+    pkg.items.forEach((item) => {
+      if (tier === "essential") {
+        newSelection[item.productId] = !item.isOptional;
+      } else if (tier === "standard") {
+        newSelection[item.productId] = item.selectedByDefault;
+      } else {
+        newSelection[item.productId] = true;
+      }
+      newQuantities[item.productId] = item.defaultKg;
+    });
+
+    setSelectedItems(newSelection);
+    setQuantities(newQuantities);
+  };
+
+  // Check if current config matches predefined tiers
+  const currentTier = () => {
+    const isUltimate = pkg.items.every(
+      (item) =>
+        selectedItems[item.productId] &&
+        quantities[item.productId] === item.defaultKg
+    );
+    if (isUltimate) return "ultimate";
+
+    const isStandard = pkg.items.every(
+      (item) =>
+        selectedItems[item.productId] === item.selectedByDefault &&
+        quantities[item.productId] === item.defaultKg
+    );
+    if (isStandard) return "standard";
+
+    const isEssential = pkg.items.every((item) => {
+      const selectionMatch = item.isOptional
+        ? !selectedItems[item.productId]
+        : selectedItems[item.productId];
+      return selectionMatch && quantities[item.productId] === item.defaultKg;
+    });
+    if (isEssential) return "essential";
+
+    return "custom";
+  };
+
+  const activeTier = currentTier();
+
+  // --- 5. Cart Integration ---
   const handleSubscribe = () => {
+    customIdCounter.current += 1;
+    // We create a customized package string for the cart description
+    const selectedList = pkg.items
+      .filter((i) => selectedItems[i.productId])
+      .map((i) => `${i.name} (${quantities[i.productId]}kg)`)
+      .join(", ");
+
     const cartProduct: IProduct = {
-      productId: pkg.id,
-      title: pkg.name,
+      productId: `${pkg.packageId}-custom-${customIdCounter.current}`, // unique per customization
+      title: `${pkg.name} (Custom)`,
       name_en: pkg.slug,
       slug: pkg.slug,
       mainImage: pkg.image,
       galleryImages: [],
-      salePrice: pkg.price,
-      basePrice: pkg.originalPrice,
-      discountPercentage: pkg.savings,
+      salePrice: totals.sale,
+      basePrice: totals.base,
+      discountPercentage: pkg.discountPercentage,
       priceLastUpdatedDate: new Date(),
-      shortDescription: pkg.description,
+      shortDescription: `Customization: ${selectedList}`,
       description: pkg.description,
       minOrderKg: 1,
       maxOrderKg: 1,
@@ -70,7 +197,7 @@ export default function PackageDetailClient({ pkg }: PackageDetailClientProps) {
       averageRating: 0,
       totalReviews: 0,
       unitsSold: 0,
-      tags: ["Package", pkg.frequency],
+      tags: ["Package", pkg.frequency, "Customized"],
       shelfLifeDays: 7,
     };
 
@@ -78,8 +205,6 @@ export default function PackageDetailClient({ pkg }: PackageDetailClientProps) {
     setIsAdded(true);
     setTimeout(() => setIsAdded(false), 2000);
   };
-
-  const productInCart = useCart().isInCart(pkg.id);
 
   const handleShare = async () => {
     try {
@@ -90,7 +215,6 @@ export default function PackageDetailClient({ pkg }: PackageDetailClientProps) {
       });
     } catch {
       navigator.clipboard.writeText(window.location.href);
-      // Optional: Add toast for "Link Copied"
     }
   };
 
@@ -103,247 +227,366 @@ export default function PackageDetailClient({ pkg }: PackageDetailClientProps) {
           className="inline-flex items-center gap-2 text-sm font-medium text-muted-foreground hover:text-primary transition-colors group"
         >
           <ChevronLeft className="size-4 transition-transform group-hover:-translate-x-1" />
-          সব প্যাকেজ ফিরে যান
+          সব প্যাকেজ
         </Link>
       </nav>
 
-      <div className="grid lg:grid-cols-2 gap-8 lg:gap-14">
-        {/* Left: Image */}
-        <div className="space-y-6">
-          <div className="relative aspect-square sm:aspect-4/3 lg:aspect-square rounded-[2rem] overflow-hidden border border-border/40 bg-card/40 backdrop-blur-xl shadow-lg">
+      <div className="grid lg:grid-cols-12 gap-8 lg:gap-14">
+        {/* Left Col: Image & Plan Tiers */}
+        <div className="lg:col-span-4 space-y-8">
+          <div className="relative aspect-square rounded-[2rem] overflow-hidden border border-border/40 bg-card/40 backdrop-blur-xl shadow-lg">
             <Image
               src={pkg.image}
               alt={pkg.name}
               fill
               className="object-cover"
               priority
-              sizes="(max-width: 768px) 100vw, 50vw"
+              sizes="(max-width: 768px) 100vw, 33vw"
             />
-            <div className="absolute top-4 md:top-6 inset-x-4 md:inset-x-6 flex justify-between items-start pointer-events-none">
-              <div className="flex flex-col gap-2">
-                {pkg.featured && (
-                  <Badge className="w-fit bg-primary/90 backdrop-blur-md text-primary-foreground px-4 py-1.5 rounded-full font-bold shadow-lg border-none text-xs">
-                    সেরা ভ্যালু
-                  </Badge>
-                )}
-                <Badge className="w-fit bg-orange-600/90 backdrop-blur-md text-white px-4 py-1.5 rounded-full font-bold shadow-lg border-none text-xs">
-                  {pkg.savings}% ছাড়
-                </Badge>
-              </div>
+            <div className="absolute top-4 right-4 animate-in fade-in zoom-in duration-500">
               <Button
                 size="icon"
                 variant="secondary"
                 onClick={handleShare}
-                className="pointer-events-auto size-10 rounded-full shadow-lg backdrop-blur-md bg-white/20 hover:bg-white/40 border border-white/20 transition-all text-white"
-                aria-label="Share"
+                className="size-10 rounded-full shadow-lg backdrop-blur-md bg-white/20 hover:bg-white/40 border border-white/20 transition-all text-white"
               >
                 <Share2 className="size-5" />
               </Button>
             </div>
           </div>
+
+          {/* Quick Choice Tiers */}
+          <div className="space-y-4">
+            <h3 className="text-sm font-black uppercase tracking-widest text-muted-foreground flex items-center justify-center lg:justify-start gap-2">
+              <Zap className="size-4 text-primary fill-primary" />
+              প্ল্যান বেছে নিন
+            </h3>
+            <div className="grid grid-cols-1 sm:grid-cols-3 lg:grid-cols-1 gap-3">
+              {[
+                {
+                  id: "essential" as const,
+                  label: "প্রয়োজনীয় (Essential)",
+                  desc: "শুধু আবশ্যিক আইটেম",
+                },
+                {
+                  id: "standard" as const,
+                  label: "জনপ্রিয় (Standard)",
+                  desc: "সেরা ভ্যালু কম্বিনেশন",
+                },
+                {
+                  id: "ultimate" as const,
+                  label: "ফুল প্যাক (Ultimate)",
+                  desc: "সব আইটেম একসাথে",
+                },
+              ].map((tier) => (
+                <button
+                  key={tier.id}
+                  onClick={() => applyTier(tier.id)}
+                  className={cn(
+                    "flex flex-col items-center lg:items-start p-4 rounded-2xl border text-center lg:text-left transition-all duration-300",
+                    activeTier === tier.id
+                      ? "bg-primary/10 border-primary shadow-[inset_0_0_12px_rgba(0,0,0,0.05)] ring-1 ring-primary/20"
+                      : "bg-card/40 border-border/40 hover:border-primary/30"
+                  )}
+                >
+                  <div className="flex items-center justify-between w-full mb-1">
+                    <span
+                      className={cn(
+                        "text-sm font-bold w-full lg:w-auto",
+                        activeTier === tier.id ? "text-primary" : ""
+                      )}
+                    >
+                      {tier.label}
+                    </span>
+                    {activeTier === tier.id && (
+                      <div className="hidden lg:flex size-5 rounded-full bg-primary items-center justify-center shrink-0">
+                        <Check className="size-3 text-white" />
+                      </div>
+                    )}
+                  </div>
+                  <span className="text-[10px] text-muted-foreground font-medium uppercase tracking-tighter">
+                    {tier.desc}
+                  </span>
+                </button>
+              ))}
+            </div>
+          </div>
         </div>
 
-        {/* Right: Info Area */}
-        <div className="flex flex-col justify-center">
-          <header className="space-y-3 mb-6 md:mb-8 text-left">
-            <div className="flex items-center gap-2 text-primary text-[10px] md:text-xs font-black tracking-[0.2em] uppercase">
-              <Calendar className="size-3.5" />
-              <span>
-                {pkg.frequency === "weekly" ? "সাপ্তাহিক" : "মাসিক"} ডিল
-              </span>
+        {/* Middle Col: Customization List */}
+        <div className="lg:col-span-8 space-y-8">
+          <header className="space-y-3 text-center lg:text-left">
+            <div className="flex flex-col lg:flex-row items-center lg:items-end gap-3 lg:gap-4 mb-2">
+              <h1 className="text-3xl md:text-5xl font-black tracking-tight leading-[1.1]">
+                {pkg.name}
+              </h1>
+              <Badge className="bg-primary/10 text-primary border-primary/20 rounded-lg px-2 py-0.5 text-[10px] font-bold uppercase tracking-widest h-fit">
+                {pkg.frequency === "weekly" ? "সাপ্তাহিক" : "মাসিক"}
+              </Badge>
             </div>
-            <h1 className="text-2xl md:text-5xl font-black tracking-tight leading-[1.1]">
-              {pkg.name}
-            </h1>
-            <p className="text-base md:text-lg text-muted-foreground leading-relaxed max-w-xl">
-              {pkg.description}
+            <p className="text-sm sm:text-base text-muted-foreground leading-relaxed max-w-2xl mx-auto lg:mx-0">
+              প্যাকেজের আইটেমগুলো আপনার ইচ্ছেমতো সাজিয়ে নিন। ওজনের ডানে/বামে
+              ক্লিক করে পরিমাণ পরিবর্তন করুন।
             </p>
           </header>
 
-          {/* Pricing Card */}
-          <div className="mb-6 p-5 md:p-6 rounded-3xl border border-border/40 bg-linear-to-br from-primary/10 to-transparent backdrop-blur-sm relative overflow-hidden group">
-            <div className="absolute -right-8 -top-8 size-32 bg-primary/10 rounded-full blur-3xl transition-transform group-hover:scale-150" />
-            <div className="flex flex-wrap items-center justify-between gap-3 relative z-10">
-              <div className="space-y-0.5">
-                <p className="text-[10px] font-bold text-muted-foreground uppercase opacity-60">
-                  প্যাকেজ মূল্য
+          <div className="space-y-4 max-h-[600px] overflow-y-auto pr-2 scrollbar-hide">
+            {pkg.items.map((item) => {
+              const product = products.find(
+                (p) => p.productId === item.productId
+              );
+              const isSelected = selectedItems[item.productId];
+              const qty = quantities[item.productId];
+
+              return (
+                <div
+                  key={item.productId}
+                  className={cn(
+                    "flex items-center gap-3 sm:gap-4 p-3 sm:p-4 rounded-2xl sm:rounded-3xl border transition-all duration-300",
+                    isSelected
+                      ? "bg-card/60 border-primary/20 shadow-sm"
+                      : "bg-background/40 border-border/20 opacity-60 grayscale-[0.5]"
+                  )}
+                >
+                  {/* Item Image */}
+                  <div className="relative size-14 sm:size-20 rounded-xl sm:rounded-2xl overflow-hidden shadow-inner bg-muted shrink-0">
+                    <Image
+                      src={product?.mainImage || pkg.image}
+                      alt={item.name}
+                      fill
+                      className="object-cover"
+                    />
+                  </div>
+
+                  {/* Item Info */}
+                  <div className="flex-1 min-w-0 mr-1">
+                    <p className="text-xs sm:text-base font-bold truncate">
+                      {item.name}
+                    </p>
+                    <p className="text-[9px] sm:text-xs text-muted-foreground font-medium uppercase truncate">
+                      {item.isOptional ? "ঐচ্ছিক আইটেম" : "আবশ্যিক আইটেম"}
+                    </p>
+                  </div>
+
+                  {/* Qty Handler */}
+                  <div className="flex items-center gap-1 sm:gap-3 bg-background/50 backdrop-blur-md rounded-xl sm:rounded-2xl p-0.5 sm:p-1 border border-border/40 shrink-0">
+                    <button
+                      onClick={() => updateQuantity(item.productId, -0.25)}
+                      disabled={!isSelected || qty <= 0.25}
+                      className="size-6 sm:size-8 rounded-lg sm:rounded-xl hover:bg-primary/10 flex items-center justify-center font-bold text-xs sm:text-lg transition-colors disabled:opacity-30"
+                    >
+                      -
+                    </button>
+                    <span className="w-9 sm:w-12 text-center text-[10px] sm:text-sm font-black">
+                      {qty}
+                      <span className="text-[8px] sm:text-[10px] ml-0.5">
+                        কেজি
+                      </span>
+                    </span>
+                    <button
+                      onClick={() => updateQuantity(item.productId, 0.25)}
+                      disabled={!isSelected}
+                      className="size-6 sm:size-8 rounded-lg sm:rounded-xl hover:bg-primary/10 flex items-center justify-center font-bold text-xs sm:text-lg transition-colors disabled:opacity-30"
+                    >
+                      +
+                    </button>
+                  </div>
+
+                  {/* Select Toggle */}
+                  <button
+                    onClick={() => toggleItem(item.productId)}
+                    disabled={!item.isOptional}
+                    className={cn(
+                      "size-7 sm:size-10 rounded-lg sm:rounded-2xl flex items-center justify-center transition-all duration-300 border shrink-0",
+                      isSelected
+                        ? "bg-primary/90 text-white border-primary shadow-lg shadow-primary/20"
+                        : "bg-background/50 text-muted-foreground border-border/40"
+                    )}
+                  >
+                    {isSelected ? (
+                      <Check className="size-3.5 sm:size-5" />
+                    ) : (
+                      <div className="size-1 sm:size-2 rounded-full bg-border" />
+                    )}
+                  </button>
+                </div>
+              );
+            })}
+          </div>
+        </div>
+      </div>
+
+      {/* Info Sections */}
+      <div className="grid grid-cols-2 lg:grid-cols-4 gap-3 sm:gap-4 mt-12 pt-12 border-t border-border/40">
+        {[
+          {
+            icon: Truck,
+            color: "text-orange-500",
+            label: "ফ্রি ডেলিভারি",
+            sub: "আপনার ঠিকানায়",
+          },
+          {
+            icon: ShieldCheck,
+            color: "text-emerald-500",
+            label: "তাজা গ্যারান্টি",
+            sub: "সেরা মানের ফ্রেশ মাছ",
+          },
+          {
+            icon: Calendar,
+            color: "text-blue-500",
+            label: "সহজ বিলিং",
+            sub: "পছন্দের শিডিউলে",
+          },
+          {
+            icon: Zap,
+            color: "text-yellow-500",
+            label: "স্মার্ট সেভিংস",
+            sub: "বাজার মূল্যের চেয়ে কম",
+          },
+        ].map((feat, i) => (
+          <div
+            key={i}
+            className="flex flex-col sm:flex-row items-center sm:items-start gap-2 sm:gap-4 p-3 sm:p-5 rounded-2xl bg-card/40 border border-border/40 group hover:border-primary/30 transition-all text-center sm:text-left"
+          >
+            <div
+              className={cn(
+                "size-8 sm:size-12 rounded-lg sm:rounded-2xl bg-muted/40 flex items-center justify-center shrink-0",
+                feat.color
+              )}
+            >
+              <feat.icon className="size-4 sm:size-6" />
+            </div>
+            <div>
+              <p className="font-bold text-[10px] sm:text-sm tracking-tight">
+                {feat.label}
+              </p>
+              <p className="hidden xs:block text-[8px] sm:text-[10px] text-muted-foreground font-medium uppercase">
+                {feat.sub}
+              </p>
+            </div>
+          </div>
+        ))}
+      </div>
+
+      {/* Floating Price Action Bar */}
+      <div className="fixed bottom-0 left-0 right-0 z-50 p-2 sm:p-4 animate-in slide-in-from-bottom-5 duration-500">
+        <div className="container mx-auto max-w-4xl">
+          <div className="bg-card/95 backdrop-blur-3xl border border-primary/20 rounded-xl sm:rounded-[2rem] p-2.5 sm:p-4 md:p-6 shadow-[0_20px_50px_rgba(0,0,0,0.15)] flex items-center justify-between gap-2 sm:gap-4">
+            <div className="flex items-center gap-2 sm:gap-6">
+              <div>
+                <p className="text-[8px] sm:text-[10px] font-black uppercase text-muted-foreground opacity-70 tracking-widest mb-0.5 sm:mb-1 items-center flex gap-1">
+                  <Zap className="size-2 sm:size-3 text-primary fill-primary" />
+                  <span className="hidden xs:inline">আপনার </span>প্যাক
                 </p>
-                <div className="flex items-baseline gap-2 md:gap-3">
-                  <span className="text-3xl md:text-4xl font-black text-primary">
-                    {formatPrice(pkg.price)}
+                <div className="flex items-baseline gap-1 sm:gap-2">
+                  <span className="text-lg sm:text-2xl md:text-3xl font-black text-primary">
+                    {formatPrice(totals.sale)}
                   </span>
-                  <span className="text-lg md:text-xl text-muted-foreground/60 line-through">
-                    {formatPrice(pkg.originalPrice)}
+                  <span className="hidden sm:inline text-xs sm:text-sm md:text-base text-muted-foreground/60 line-through">
+                    {formatPrice(totals.base)}
                   </span>
                 </div>
               </div>
-              <div className="shrink-0">
-                <Badge className="bg-emerald-500/10 text-emerald-600 dark:text-emerald-400 border-emerald-500/20 px-2.5 py-1 text-[11px] md:text-sm font-bold shadow-xs">
-                  সাশ্রয় {formatPrice(pkg.originalPrice - pkg.price)}
+              <div className="hidden md:block">
+                <Badge className="bg-emerald-500/10 text-emerald-600 dark:text-emerald-400 border-none px-3 py-1.5 rounded-xl font-black text-xs">
+                  সাশ্রয় {formatPrice(totals.savings)}
                 </Badge>
               </div>
             </div>
-          </div>
 
-          <div className="grid sm:grid-cols-2 gap-6 mb-10">
-            {/* Package Items */}
-            <div className="space-y-4">
-              <h3 className="text-sm font-black uppercase tracking-wider text-foreground/80 flex items-center gap-2">
-                <Zap className="size-4 text-primary fill-primary" />
-                প্যাকেজে যা যা পাচ্ছেন
-              </h3>
-              <ul className="space-y-3">
-                {pkg.items.map((item, idx) => (
-                  <li key={idx} className="flex items-center gap-3 text-sm">
-                    <div className="flex size-6 shrink-0 items-center justify-center rounded-full bg-primary/10 text-primary border border-primary/20">
-                      <Check className="size-3.5" />
-                    </div>
-                    <span className="font-semibold text-muted-foreground leading-snug">
-                      {item}
-                    </span>
-                  </li>
-                ))}
-              </ul>
-            </div>
-
-            {/* Feature Cards */}
-            <div className="space-y-3">
-              <div className="flex items-center gap-4 p-4 rounded-2xl border border-border/40 bg-card/60 shadow-sm">
-                <div className="size-12 rounded-xl bg-orange-500/10 flex items-center justify-center shrink-0">
-                  <Truck className="size-6 text-orange-600" />
-                </div>
-                <div>
-                  <p className="font-bold text-sm">ফ্রি ডেলিভারি</p>
-                  <p className="text-[10px] text-muted-foreground font-medium uppercase tracking-tighter">
-                    সাবস্ক্রিপশন গিফট
-                  </p>
-                </div>
-              </div>
-              <div className="flex items-center gap-4 p-4 rounded-2xl border border-border/40 bg-card/60 shadow-sm">
-                <div className="size-12 rounded-xl bg-emerald-500/10 flex items-center justify-center shrink-0">
-                  <ShieldCheck className="size-6 text-emerald-600" />
-                </div>
-                <div>
-                  <p className="font-bold text-sm">তাজা গ্যারান্টি</p>
-                  <p className="text-[10px] text-muted-foreground font-medium uppercase tracking-tighter">
-                    ১০০% ফ্রেশ মাছ
-                  </p>
-                </div>
-              </div>
-            </div>
-          </div>
-
-          {/* Desktop Subscription Button */}
-          <div className="hidden lg:block">
-            <Button
-              onClick={handleSubscribe}
-              size="lg"
-              className={cn(
-                "w-full h-16 rounded-[1.25rem] text-xl font-bold shadow-2xl transition-all active:scale-95",
-                isAdded
-                  ? "bg-green-600 hover:bg-green-600"
-                  : "bg-primary hover:shadow-primary/20"
-              )}
-            >
-              {isAdded ? (
-                <>
-                  <Check className="mr-3 size-7" />
-                  কার্টে যোগ হয়েছে
-                </>
-              ) : (
-                <>
-                  <ShoppingCart className="mr-3 size-6" />
-                  সাবস্ক্রিপশন শুরু করুন
-                </>
-              )}
-            </Button>
-          </div>
-        </div>
-      </div>
-
-      {/* Subscription FAQ / Info */}
-      <section className="mt-20 border-t border-border/40 pt-16">
-        <h2 className="text-3xl font-black mb-12 text-center">
-          সাবস্ক্রিপশন শুরু হবে{" "}
-          <span className="text-primary">৩টি সহজ ধাপে</span>
-        </h2>
-        <div className="grid md:grid-cols-3 gap-8 relative">
-          <div className="hidden md:block absolute top-6 left-[20%] right-[20%] h-px bg-border/40 z-0" />
-          {[
-            {
-              id: "১",
-              title: "প্যাকেজ পছন্দ করুন",
-              desc: "আপনার পরিবারের প্রয়োজন অনুযায়ী সেরা প্যাকেজটি বেছে নিন।",
-            },
-            {
-              id: "২",
-              title: "অর্ডার কনফার্ম করুন",
-              desc: "ঠিকানা ও সময় কনফার্ম করে সাবস্ক্রিপশন শেষ করুন।",
-            },
-            {
-              id: "৩",
-              title: "ডেলিভারি বুঝে নিন",
-              desc: "নির্দিষ্ট সময়ে তাজা মাছ সরাসরি আপনার ঘরে পৌঁছে যাবে।",
-            },
-          ].map((step, idx) => (
-            <div
-              key={idx}
-              className="relative z-10 text-center space-y-4 group"
-            >
-              <div className="size-12 rounded-full bg-primary flex items-center justify-center font-black text-primary-foreground mx-auto shadow-lg group-hover:scale-110 transition-transform">
-                {step.id}
-              </div>
-              <h4 className="text-lg font-black">{step.title}</h4>
-              <p className="text-sm text-muted-foreground leading-relaxed max-w-[250px] mx-auto">
-                {step.desc}
-              </p>
-            </div>
-          ))}
-        </div>
-      </section>
-
-      {/* Mobile Bottom Bar */}
-      <div className="fixed bottom-0 left-0 right-0 z-50 bg-card/90 backdrop-blur-[20px] border-t border-border/20 p-4 lg:hidden shadow-[0_-8px_30px_rgb(0,0,0,0.12)]">
-        <div className="container mx-auto max-w-lg">
-          <div className="flex gap-3">
-            <Button
-              onClick={handleSubscribe}
-              size="lg"
-              className={cn(
-                "flex-1 h-14 rounded-2xl text-base font-bold shadow-lg transition-all active:scale-95 px-2",
-                isAdded
-                  ? "bg-green-600 hover:bg-green-600"
-                  : "bg-primary shadow-primary/20"
-              )}
-            >
-              <div className="flex items-center justify-center gap-2">
-                {isAdded || productInCart ? (
+            <div className="flex items-center gap-2 ml-auto">
+              <Button
+                onClick={handleSubscribe}
+                size="lg"
+                className={cn(
+                  "h-10 sm:h-14 px-4 sm:px-8 md:px-12 rounded-lg sm:rounded-2xl text-[11px] sm:text-base font-black shadow-xl transition-all active:scale-95",
+                  isAdded
+                    ? "bg-green-600 hover:bg-green-600"
+                    : "bg-primary shadow-primary/20"
+                )}
+              >
+                {isAdded ? (
                   <>
-                    <Check className="size-5" />
-                    <span>কার্টে যোগ হয়েছে</span>
+                    <Check className="mr-1 sm:mr-2 size-3.5 sm:size-5" /> যোগ
+                    হয়েছে
                   </>
                 ) : (
                   <>
-                    <ShoppingCart className="size-5" />
-                    <span className="truncate text-sm sm:text-base">
-                      সাবস্ক্রিপশন করুন
-                    </span>
+                    <ShoppingCart className="mr-1 sm:mr-2 size-3.5 sm:size-5" />
+                    <span className="xs:inline"> সাবস্ক্রাইব</span>
                   </>
                 )}
-              </div>
-            </Button>
-            <Button
-              variant="outline"
-              size="icon"
-              onClick={handleShare}
-              className="h-14 w-14 rounded-2xl border-border/40 bg-background/50 backdrop-blur-sm active:scale-95 shrink-0"
-              aria-label="Share"
-            >
-              <Share2 className="size-5 text-muted-foreground" />
-            </Button>
+              </Button>
+            </div>
           </div>
         </div>
       </div>
+      {/* More Packages Section */}
+      {allPackages && allPackages.length > 0 && (
+        <div className="mt-20 pt-16 border-t border-border/40">
+          <div className="flex flex-col md:flex-row md:items-end justify-between gap-4 mb-10 text-center md:text-left">
+            <div className="space-y-2">
+              <h2 className="text-2xl md:text-3xl font-black tracking-tight">
+                সব প্যাকেজ দেখুন
+              </h2>
+              <p className="text-sm text-muted-foreground">
+                সাপ্তাহিক ও মাসিক বাজারের আরও সাশ্রয়ী প্যাকেজ আমাদের কাছে আছে।
+              </p>
+            </div>
+            <Link href="/packages">
+              <Button
+                variant="outline"
+                className="rounded-xl font-bold h-11 border-primary text-primary hover:bg-primary/10"
+              >
+                সব প্যাকেজ ও কাস্টম প্যাক
+              </Button>
+            </Link>
+          </div>
+
+          <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-4 gap-6">
+            {allPackages.map((other) => (
+              <div key={other.packageId} className="group outline-none">
+                <Link
+                  href={`/packages/${other.slug}`}
+                  className="block relative aspect-video rounded-2xl overflow-hidden border border-border/20 mb-3"
+                >
+                  <Image
+                    src={other.image}
+                    alt={other.name}
+                    fill
+                    className="object-cover transition-transform duration-500 group-hover:scale-110"
+                  />
+                  <div className="absolute inset-0 bg-black/40 group-hover:bg-black/20 transition-colors" />
+                  <div className="absolute top-2 right-2">
+                    <Badge className="bg-orange-500/90 border-none text-[9px] font-bold">
+                      {other.discountPercentage}% সাশ্রয়
+                    </Badge>
+                  </div>
+                </Link>
+                <div className="space-y-1">
+                  <Badge
+                    variant="outline"
+                    className="text-[9px] uppercase tracking-widest border-primary/20 text-primary h-fit px-1.5 font-bold"
+                  >
+                    {other.frequency === "weekly" ? "সাপ্তাহিক" : "মাসিক"}
+                  </Badge>
+                  <Link
+                    href={`/packages/${other.slug}`}
+                    className="block hover:text-primary transition-colors"
+                  >
+                    <h4 className="font-bold text-sm line-clamp-1">
+                      {other.name}
+                    </h4>
+                  </Link>
+                  <p className="text-xs font-black text-primary">
+                    {formatPrice(other.salePrice)}
+                  </p>
+                </div>
+              </div>
+            ))}
+          </div>
+        </div>
+      )}
     </main>
   );
 }

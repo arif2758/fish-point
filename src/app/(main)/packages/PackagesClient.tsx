@@ -29,7 +29,7 @@ export default function PackagesClient({ packages }: { packages: IPackage[] }) {
       </div>
 
       {/* Benefits Grid */}
-      <div className="grid grid-cols-2 md:grid-cols-4 gap-4 mb-14">
+      <div className="grid grid-cols-2 lg:grid-cols-4 gap-4 mb-14">
         {[
           {
             icon: ShieldCheck,
@@ -49,7 +49,7 @@ export default function PackagesClient({ packages }: { packages: IPackage[] }) {
           { icon: Boxes, title: "কাস্টম প্যাক", desc: "আপনার পছন্দ মত" },
         ].map((item, idx) => (
           <div
-            key={idx}
+            key={`benefit-${idx}`}
             className="p-4 rounded-xl border border-border/40 bg-card/40 backdrop-blur-xl text-center space-y-2"
           >
             <div className="flex justify-center">
@@ -62,18 +62,24 @@ export default function PackagesClient({ packages }: { packages: IPackage[] }) {
       </div>
 
       {/* Tabs Section */}
-      <Tabs defaultValue="weekly" className="space-y-10">
-        <div className="flex justify-center">
-          <TabsList className="grid w-full max-w-[400px] grid-cols-2 h-12 bg-card/50 backdrop-blur-xl p-1 rounded-full border border-border/40">
+      <Tabs defaultValue="weekly" className="space-y-12">
+        <div className="flex flex-col items-center gap-6">
+          <div className="text-center space-y-1">
+            <h2 className="text-lg font-bold">পছন্দসই ফ্রিকোয়েন্সি বেছে নিন</h2>
+            <p className="text-xs text-muted-foreground">
+              সাপ্তাহিক নাকি মাসিক? আপনার প্রয়োজন অনুযায়ী।
+            </p>
+          </div>
+          <TabsList className="grid w-full max-w-[420px] grid-cols-2 h-14 bg-card/60 backdrop-blur-3xl p-1.5 rounded-2xl border border-primary/20 shadow-xl shadow-primary/5">
             <TabsTrigger
               value="weekly"
-              className="rounded-full text-sm font-bold data-[state=active]:bg-primary data-[state=active]:text-primary-foreground"
+              className="rounded-xl text-sm font-black data-[state=active]:bg-primary data-[state=active]:text-primary-foreground transition-all duration-300"
             >
-              সাপ্তাহিক প্যাকেজ
+              সাপ্তাহিক বাজার
             </TabsTrigger>
             <TabsTrigger
               value="monthly"
-              className="rounded-full text-sm font-bold data-[state=active]:bg-primary data-[state=active]:text-primary-foreground"
+              className="rounded-xl text-sm font-black data-[state=active]:bg-primary data-[state=active]:text-primary-foreground transition-all duration-300"
             >
               মাসিক প্যাকেজ
             </TabsTrigger>
@@ -86,7 +92,7 @@ export default function PackagesClient({ packages }: { packages: IPackage[] }) {
         >
           <div className="grid grid-cols-1 md:grid-cols-2 gap-8 max-w-4xl mx-auto">
             {weeklyPackages.map((pkg) => (
-              <PackageCard key={pkg.id} pkg={pkg} />
+              <PackageCard key={pkg.packageId} pkg={pkg} />
             ))}
           </div>
         </TabsContent>
@@ -97,7 +103,7 @@ export default function PackagesClient({ packages }: { packages: IPackage[] }) {
         >
           <div className="grid grid-cols-1 md:grid-cols-2 gap-8 max-w-4xl mx-auto">
             {monthlyPackages.map((pkg) => (
-              <PackageCard key={pkg.id} pkg={pkg} />
+              <PackageCard key={pkg.packageId} pkg={pkg} />
             ))}
           </div>
         </TabsContent>

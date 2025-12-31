@@ -72,7 +72,7 @@ export default function QuantitySelector({
         </Button>
       </div>
     );
-  } 
+  }
 
   return (
     <div

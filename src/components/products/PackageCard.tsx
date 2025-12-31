@@ -22,15 +22,15 @@ export default function PackageCard({ pkg }: { pkg: IPackage }) {
 
     // Treat package as a unique product for the cart
     const cartProduct: IProduct = {
-      productId: pkg.id,
+      productId: pkg.packageId,
       title: pkg.name,
       name_en: pkg.slug,
-      slug: pkg.slug || `package-${pkg.id}`,
+      slug: pkg.slug || `package-${pkg.packageId}`,
       mainImage: pkg.image,
       galleryImages: [],
-      salePrice: pkg.price,
-      basePrice: pkg.originalPrice,
-      discountPercentage: pkg.savings,
+      salePrice: pkg.salePrice,
+      basePrice: pkg.basePrice,
+      discountPercentage: pkg.discountPercentage,
       priceLastUpdatedDate: new Date(),
       shortDescription: pkg.description,
       description: pkg.description,
@@ -91,7 +91,7 @@ export default function PackageCard({ pkg }: { pkg: IPackage }) {
       {/* Image Header - Clickable */}
       <Link
         href={`/packages/${pkg.slug}`}
-        className="relative h-48 w-full overflow-hidden block"
+        className="relative h-40 sm:h-48 w-full overflow-hidden block"
       >
         <Image
           src={pkg.image}
@@ -99,21 +99,21 @@ export default function PackageCard({ pkg }: { pkg: IPackage }) {
           fill
           className="object-cover transition-transform duration-500 group-hover:scale-110"
         />
-        <div className="absolute inset-0 bg-linear-to-t from-card/80 to-transparent" />
-        <div className="absolute bottom-4 left-4 right-4">
-          <Badge className="mb-2 bg-orange-500/90 backdrop-blur-md border-none text-[10px]">
-            {pkg.savings}% সেভিংস
+        <div className="absolute inset-0 bg-linear-to-t from-black/60 to-transparent" />
+        <div className="absolute bottom-3 left-3 right-3 sm:bottom-4 sm:left-4 sm:right-4">
+          <Badge className="mb-1.5 bg-orange-500/90 backdrop-blur-md border-none text-[9px] sm:text-[10px]">
+            {pkg.discountPercentage}% সেভিংস
           </Badge>
-          <h3 className="text-xl font-bold text-white leading-tight">
+          <h3 className="text-lg sm:text-xl font-bold text-white leading-tight">
             {pkg.name}
           </h3>
         </div>
       </Link>
 
       {/* Content */}
-      <div className="flex-1 p-5 space-y-4">
+      <div className="flex-1 p-4 sm:p-5 space-y-3 sm:space-y-4">
         <Link href={`/packages/${pkg.slug}`} className="block group/link">
-          <p className="text-xs text-muted-foreground leading-relaxed">
+          <p className="text-[11px] sm:text-xs text-muted-foreground leading-relaxed">
             {pkg.description}
           </p>
         </Link>
@@ -122,10 +122,10 @@ export default function PackageCard({ pkg }: { pkg: IPackage }) {
         <div className="space-y-1">
           <div className="flex items-baseline gap-2">
             <span className="text-2xl font-black text-primary">
-              {formatPrice(pkg.price)}
+              {formatPrice(pkg.salePrice)}
             </span>
             <span className="text-xs text-muted-foreground line-through">
-              {formatPrice(pkg.originalPrice)}
+              {formatPrice(pkg.basePrice)}
             </span>
           </div>
           <p className="text-[10px] text-muted-foreground font-medium uppercase tracking-wide">
@@ -144,7 +144,9 @@ export default function PackageCard({ pkg }: { pkg: IPackage }) {
                 <div className="flex size-4 items-center justify-center rounded-full bg-primary/20 text-primary">
                   <Check className="size-2.5" />
                 </div>
-                <span>{item}</span>
+                <span>
+                  {item.name} ({item.defaultKg} কেজি)
+                </span>
               </li>
             ))}
           </ul>

@@ -3,7 +3,6 @@ import dbConnect from "@/lib/dbConnect";
 import ProductCollectionModel from "@/models/ProductCollection";
 import OffersClient from "./OffersClient";
 import CategoryNav from "@/components/navigation/CategoryNav";
-import Footer from "@/components/Footer";
 
 export const metadata: Metadata = {
   title: "বিশেষ অফার | Fish Point - সেরা ডিসকাউন্ট",
@@ -37,7 +36,6 @@ export default async function OffersPage() {
     <>
       <CategoryNav />
       <OffersClient products={products} />
-      <Footer />
     </>
   );
 }
