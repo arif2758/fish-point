@@ -10,30 +10,37 @@ export const metadata: Metadata = {
     "সাশ্রয়ী দামে সাপ্তাহিক এবং মাসিক মাছের প্যাকেজ সাবস্ক্রাইব করুন। তাজা মাছ সরাসরি আপনার বাসায়।",
 };
 
+export const dynamic = "force-dynamic";
+export const revalidate = 0;
+
 async function getPackages() {
   await dbConnect();
 
+  // Find all PUBLISHED packages
   let packages = await PackageCollectionModel.find({ published: true }).lean();
 
-  // STALE DATA CHECK: If we have packages but they missing new fields (like basePrice), clear them
-  if (packages.length > 0 && !(packages[0] as unknown as IPackage).basePrice) {
-    console.log("Stale package data detected. Refreshing collection...");
-    await PackageCollectionModel.deleteMany({});
-    packages = [];
-  }
+  const weeklyCount = packages.filter((p) => p.frequency === "weekly").length;
+  const monthlyCount = packages.filter((p) => p.frequency === "monthly").length;
 
-  // If no packages in DB, seed initial data for demonstration
-  if (packages.length === 0) {
-    const initialPackages = [
+  // RE-SEED CHECK: If anything is missing, Nuke once and re-seed
+  if (packages.length === 0 || weeklyCount < 2 || monthlyCount < 2) {
+    await PackageCollectionModel.deleteMany({});
+
+    const initialPackages: IPackage[] = [
       {
-        packageId: "pw-1",
-        name: "সাপ্তাহিক বাজার (ছোট পরিবার)",
-        slug: "weekly-small-family",
+        packageId: "nx-w1",
+        name: "সাস্রয়ী সাপ্তাহিক বাজার",
+        slug: "weekly-eco-nx",
         basePrice: 1500,
         discountPercentage: 16.6,
         salePrice: 1250,
         description:
-          "৩-৪ জনের একটি ছোট পরিবারের সপ্তাহের মাছের চাহিদা মেটাতে সেরা প্যাকেজ।",
+          "৩-৪ জনের একটি ছোট পরিবারের সপ্তাহের মাছের চাহিদা মেটাতে সেরা বাজেট প্যাকেজ।",
+        image:
+          "https://images.unsplash.com/photo-1519708227418-c8fd9a32b7a2?q=80&w=800&auto=format&fit=crop",
+        frequency: "weekly",
+        published: true,
+        stockStatus: "available",
         items: [
           {
             productId: "P001",
@@ -45,42 +52,38 @@ async function getPackages() {
           {
             productId: "P005",
             name: "তেলাপিয়া",
-            defaultKg: 0.5,
+            defaultKg: 1,
             isOptional: true,
             selectedByDefault: true,
           },
           {
             productId: "P006",
             name: "সিং মাছ",
-            defaultKg: 0.25,
-            isOptional: true,
-            selectedByDefault: true,
-          },
-          {
-            productId: "P008",
-            name: "ইলিশ মাছ",
             defaultKg: 0.5,
             isOptional: true,
             selectedByDefault: true,
           },
         ],
-        image:
-          "https://images.unsplash.com/photo-1519708227418-c8fd9a32b7a2?q=80&w=800&auto=format&fit=crop",
-        frequency: "weekly",
       },
       {
-        packageId: "pw-2",
-        name: "ফ্যামিলি ফিষ্ট (সাপ্তাহিক)",
-        slug: "family-feast-weekly",
-        basePrice: 2900,
-        discountPercentage: 17.2,
-        salePrice: 2400,
+        packageId: "nx-w2",
+        name: "ফ্যামিলি ফিষ্ট",
+        slug: "family-feast-nx",
+        basePrice: 3200,
+        discountPercentage: 18.75,
+        salePrice: 2600,
         description:
           "সব ধরণের ফ্রেশ মাছের কম্বিনেশনে আপনার পুরো সপ্তাহের মাছের বাজার।",
+        image:
+          "https://images.unsplash.com/photo-1544551763-46a013bb70d5?q=80&w=800&auto=format&fit=crop",
+        frequency: "weekly",
+        featured: true,
+        published: true,
+        stockStatus: "available",
         items: [
           {
             productId: "P002",
-            name: "রুই/কাতলা",
+            name: "কাতলা মাছ",
             defaultKg: 1.5,
             isOptional: false,
             selectedByDefault: true,
@@ -93,40 +96,48 @@ async function getPackages() {
             selectedByDefault: true,
           },
           {
-            productId: "P007",
-            name: "পাবদা",
+            productId: "P004",
+            name: "চিংড়ি (গলদা)",
             defaultKg: 0.5,
             isOptional: true,
             selectedByDefault: true,
           },
           {
-            productId: "P010",
-            name: "সামুদ্রিক কদমা",
+            productId: "P008",
+            name: "ইলিশ মাছ",
             defaultKg: 1,
             isOptional: true,
             selectedByDefault: true,
           },
         ],
-        image:
-          "https://images.unsplash.com/photo-1544551763-46a013bb70d5?q=80&w=800&auto=format&fit=crop",
-        frequency: "weekly",
-        featured: true,
       },
       {
-        packageId: "pm-1",
-        name: "মাসিক সাশ্রয় প্যাকেজ",
-        slug: "monthly-savings-pack",
-        basePrice: 6000,
-        discountPercentage: 18.3,
-        salePrice: 4900,
+        packageId: "nx-m1",
+        name: "মাসিক সাশ্রয় বাজার",
+        slug: "monthly-eco-nx",
+        basePrice: 5500,
+        discountPercentage: 18.2,
+        salePrice: 4500,
         description:
-          "পুরো মাসের ঝক্কি এড়াতে মাসিক প্যাকেজে পাচ্ছেন সব মাছ একসাথে।",
+          "পুরো মাসের মাছের ঝামেলা থেকে মুক্তি পেতে স্মার্ট পরিবারের জন্য সাশ্রয়ী প্যাকেজ।",
+        image:
+          "https://images.unsplash.com/photo-1553659971-f01207815844?q=80&w=800&auto=format&fit=crop",
+        frequency: "monthly",
+        published: true,
+        stockStatus: "available",
         items: [
           {
-            productId: "P002",
-            name: "رুই/কাতলা",
+            productId: "P001",
+            name: "রুই মাছ",
             defaultKg: 4,
             isOptional: false,
+            selectedByDefault: true,
+          },
+          {
+            productId: "P002",
+            name: "কাতলা মাছ",
+            defaultKg: 2,
+            isOptional: true,
             selectedByDefault: true,
           },
           {
@@ -136,82 +147,46 @@ async function getPackages() {
             isOptional: true,
             selectedByDefault: true,
           },
-          {
-            productId: "P004",
-            name: "চিংড়ি",
-            defaultKg: 1,
-            isOptional: true,
-            selectedByDefault: true,
-          },
-          {
-            productId: "P008",
-            name: "ইলিশ",
-            defaultKg: 2,
-            isOptional: true,
-            selectedByDefault: true,
-          },
-          {
-            productId: "P009",
-            name: "শোল",
-            defaultKg: 0.5,
-            isOptional: true,
-            selectedByDefault: true,
-          },
         ],
-        image:
-          "https://images.unsplash.com/photo-1553659971-f01207815844?q=80&w=800&auto=format&fit=crop",
-        frequency: "monthly",
       },
       {
-        packageId: "pm-2",
-        name: "প্রিমিয়াম মাসিক প্যাকেজ",
-        slug: "premium-monthly-pack",
-        basePrice: 10500,
-        discountPercentage: 19,
-        salePrice: 8500,
+        packageId: "nx-m2",
+        name: "আল্টিমেট মাসিক বাজার",
+        slug: "ultimate-bazar-nx",
+        basePrice: 12000,
+        discountPercentage: 20.8,
+        salePrice: 9500,
         description:
-          "বিলাসবহুল এবং সবধরণের প্রিমিয়াম মাছ নিয়ে আমাদের সেরা মাসিক প্যাকেজ।",
+          "সব ধরণের প্রিমিয়াম মাছের সমাহারে আমাদের সবচেয়ে বড় এবং সেরা মাসিক প্যাকেজ।",
+        image:
+          "https://images.unsplash.com/photo-1615141982883-c7ad0e69fd62?q=80&w=800&auto=format&fit=crop",
+        frequency: "monthly",
+        featured: true,
+        published: true,
+        stockStatus: "available",
         items: [
           {
-            productId: "P011",
+            productId: "P001",
             name: "রুই বড়",
             defaultKg: 5,
             isOptional: false,
             selectedByDefault: true,
           },
           {
-            productId: "P012",
-            name: "গলদা চিংড়ি",
+            productId: "P003",
+            name: "বাগদা চিংড়ি",
             defaultKg: 2,
             isOptional: true,
             selectedByDefault: true,
           },
           {
-            productId: "P013",
+            productId: "P008",
             name: "বড় ইলিশ",
             defaultKg: 3,
             isOptional: true,
             selectedByDefault: true,
           },
-          {
-            productId: "P014",
-            name: "সুরমা",
-            defaultKg: 1,
-            isOptional: true,
-            selectedByDefault: true,
-          },
-          {
-            productId: "P015",
-            name: "কোরাল",
-            defaultKg: 1,
-            isOptional: true,
-            selectedByDefault: true,
-          },
         ],
-        image:
-          "https://images.unsplash.com/photo-1615141982883-c7ad0e69fd62?q=80&w=800&auto=format&fit=crop",
-        frequency: "monthly",
-        featured: true,
       },
     ];
 
@@ -219,6 +194,7 @@ async function getPackages() {
     packages = await PackageCollectionModel.find({ published: true }).lean();
   }
 
+  console.log(`>>> [DEBUG] Returning ${packages.length} packages to client.`);
   return JSON.parse(JSON.stringify(packages));
 }
 

@@ -81,7 +81,8 @@ export default function PackagesClient({ packages }: { packages: IPackage[] }) {
               value="monthly"
               className="rounded-xl text-sm font-black data-[state=active]:bg-primary data-[state=active]:text-primary-foreground transition-all duration-300"
             >
-              মাসিক প্যাকেজ
+              মাসিক প্যাকেজ{" "}
+              {monthlyPackages.length > 0 && `(${monthlyPackages.length})`}
             </TabsTrigger>
           </TabsList>
         </div>
@@ -101,11 +102,24 @@ export default function PackagesClient({ packages }: { packages: IPackage[] }) {
           value="monthly"
           className="animate-in fade-in slide-in-from-bottom-5 duration-500 outline-none"
         >
-          <div className="grid grid-cols-1 md:grid-cols-2 gap-8 max-w-4xl mx-auto">
-            {monthlyPackages.map((pkg) => (
-              <PackageCard key={pkg.packageId} pkg={pkg} />
-            ))}
-          </div>
+          {monthlyPackages.length > 0 ? (
+            <div className="grid grid-cols-1 md:grid-cols-2 gap-8 max-w-4xl mx-auto">
+              {monthlyPackages.map((pkg) => (
+                <PackageCard key={pkg.packageId} pkg={pkg} />
+              ))}
+            </div>
+          ) : (
+            <div className="text-center py-20 px-4 rounded-3xl border border-dashed border-border/60 bg-muted/20">
+              <Boxes className="size-12 mx-auto text-muted-foreground mb-4 opacity-50" />
+              <h3 className="text-xl font-bold mb-2">
+                কোনো মাসিক প্যাকেজ পাওয়া যায়নি
+              </h3>
+              <p className="text-muted-foreground text-sm max-w-sm mx-auto">
+                দুঃখিত, বর্তমানে কোনো মাসিক প্যাকেজ উপলব্ধ নেই। অনুগ্রহ করে
+                শীঘ্রই আবার চেক করুন।
+              </p>
+            </div>
+          )}
         </TabsContent>
       </Tabs>
 
