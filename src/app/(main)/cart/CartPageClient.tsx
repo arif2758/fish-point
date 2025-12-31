@@ -87,7 +87,7 @@ export default function CartPageClient() {
               return (
                 <article
                   key={item.product.productId}
-                  className="group relative flex gap-4 p-4 sm:p-5 rounded-3xl border border-border/40 bg-card/40 backdrop-blur-[20px] hover:shadow-xl hover:border-border/60 transition-all duration-300 overflow-hidden"
+                  className="group relative flex gap-3 sm:gap-4 p-3 sm:p-5 rounded-3xl border border-border/40 bg-card/40 backdrop-blur-[20px] hover:shadow-xl hover:border-border/60 transition-all duration-300 overflow-hidden"
                 >
                   {/* Subtle Background Accent for Packages */}
                   {isPackage && (
@@ -152,7 +152,7 @@ export default function CartPageClient() {
                             : `/products/${item.product.slug}`
                         }
                       >
-                        <h3 className="font-bold text-base sm:text-xl leading-tight hover:text-primary transition-colors line-clamp-2 mb-2">
+                        <h3 className="font-bold text-[13px] sm:text-lg leading-snug hover:text-primary transition-colors line-clamp-2 mb-1.5 sm:mb-2">
                           {item.product.title}
                         </h3>
                       </Link>
@@ -184,25 +184,25 @@ export default function CartPageClient() {
                     </div>
 
                     {/* Price & Quantity Area */}
-                    <div className="flex items-end justify-between gap-4 mt-4">
-                      <div className="flex flex-col">
-                        <div className="flex items-baseline gap-2">
-                          <span className="text-xl sm:text-2xl font-black text-primary">
+                    <div className="flex flex-col sm:flex-row sm:items-end sm:justify-between gap-3 sm:gap-4 mt-3 sm:mt-6">
+                      <div className="flex flex-row sm:flex-col items-baseline sm:items-start justify-between sm:justify-start gap-1">
+                        <div className="flex items-baseline gap-1.5 sm:gap-2">
+                          <span className="text-lg sm:text-2xl font-black text-primary">
                             {formatPrice(item.product.salePrice)}
                           </span>
-                          <span className="text-xs text-muted-foreground font-medium">
+                          <span className="text-[10px] sm:text-xs text-muted-foreground font-medium">
                             /কেজি
                           </span>
                         </div>
                         {item.product.salePrice < item.product.basePrice && (
-                          <span className="text-xs text-muted-foreground line-through decoration-destructive/50">
+                          <span className="text-[9px] sm:text-xs text-muted-foreground line-through decoration-destructive/50">
                             {formatPrice(item.product.basePrice)}
                           </span>
                         )}
                       </div>
 
-                      {/* Desktop Quantity Selector */}
-                      <div className="hidden sm:block">
+                      {/* Quantity Selector Area - improved stacking for mobile */}
+                      <div className="flex flex-wrap items-center justify-between w-full sm:w-auto gap-2 mt-auto">
                         <QuantitySelector
                           quantity={item.quantity}
                           min={item.product.minOrderKg}
@@ -215,13 +215,25 @@ export default function CartPageClient() {
                               ? 1
                               : item.product.minOrderKg
                           }
+                          variant="premium"
+                          className="scale-[0.75] xs:scale-[0.85] sm:scale-100 origin-left"
                         />
+
+                        {/* Mobile Only Total Area */}
+                        <div className="sm:hidden flex flex-col items-end pl-2 border-l border-border/20 ml-auto shrink-0">
+                          <span className="text-[8px] font-bold text-muted-foreground uppercase tracking-tight">
+                            সাবটোটাল
+                          </span>
+                          <span className="text-sm font-black text-primary leading-none whitespace-nowrap">
+                            {formatPrice(itemTotal)}
+                          </span>
+                        </div>
                       </div>
                     </div>
                   </div>
 
-                  {/* Desktop Total Price Area */}
-                  <div className="hidden flex-col items-end justify-between sm:flex pl-4 min-w-[120px] border-l border-border/20">
+                  {/* Desktop Only Area */}
+                  <div className="hidden sm:flex flex-col items-end justify-between pl-4 min-w-[120px] border-l border-border/20 ml-2">
                     <Button
                       variant="ghost"
                       size="icon"
@@ -242,13 +254,12 @@ export default function CartPageClient() {
                     </div>
                   </div>
 
-                  {/* Mobile Delete */}
+                  {/* Mobile Delete Button */}
                   <Button
                     variant="ghost"
                     size="icon"
-                    className="sm:hidden absolute top-2 right-2 size-10 rounded-full text-muted-foreground/50 hover:text-destructive bg-card/20 backdrop-blur-sm"
+                    className="sm:hidden absolute top-2 right-2 size-9 rounded-full text-muted-foreground/40 hover:text-destructive bg-card/20 backdrop-blur-sm"
                     onClick={() => removeItem(item.product.productId)}
-                    aria-label={`${item.product.title} মুছুন`}
                   >
                     <Trash2 className="size-4" />
                   </Button>
@@ -256,11 +267,13 @@ export default function CartPageClient() {
               );
             })}
           </div>
+
+          {/* Consolidation: Mobile Summary is now removed, the original aside below handles it for consistency. */}
         </section>
 
-        {/* Right: Order Summary (Sticky Container) */}
+        {/* Right: Order Summary */}
         <aside className="lg:col-span-1 space-y-4" aria-label="অর্ডার সারাংশ">
-          <div className="sticky top-20 flex flex-col gap-4">
+          <div className="lg:sticky lg:top-20 flex flex-col gap-4">
             {/* Summary Card */}
             <div className="rounded-3xl border border-border/40 bg-card/40 backdrop-blur-[20px] p-6 sm:p-8 shadow-xl relative overflow-hidden ring-1 ring-white/5">
               {/* Decorative Gradient */}
@@ -271,6 +284,31 @@ export default function CartPageClient() {
               </h2>
 
               <div className="space-y-4 mb-8">
+                {/* Detailed Item List for Desktop Sidebar */}
+                <div className="space-y-3 pb-5 border-b border-border/40 max-h-60 overflow-y-auto pr-2 scrollbar-thin scrollbar-thumb-primary/20">
+                  {cart.items.map((item) => (
+                    <div
+                      key={item.product.productId}
+                      className="flex justify-between items-start gap-4"
+                    >
+                      <p className="text-xs font-medium text-muted-foreground flex-1">
+                        {item.product.title}{" "}
+                        <span className="text-primary font-bold">
+                          x {item.quantity} কেজি
+                        </span>
+                      </p>
+                      <span className="text-xs font-bold whitespace-nowrap">
+                        {formatPrice(
+                          calculateTotalPrice(
+                            item.product.salePrice,
+                            item.quantity
+                          )
+                        )}
+                      </span>
+                    </div>
+                  ))}
+                </div>
+
                 <div className="flex justify-between items-center text-sm sm:text-base">
                   <span className="text-muted-foreground font-medium">
                     সাবটোটাল
