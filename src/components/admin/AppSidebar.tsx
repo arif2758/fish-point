@@ -43,10 +43,13 @@ export function AppSidebar({ ...props }: React.ComponentProps<typeof Sidebar>) {
         <SidebarMenu>
           <SidebarMenuItem>
             <div className="flex items-center gap-2 px-2 py-2">
-              <div className="flex aspect-square size-8 items-center justify-center rounded-lg bg-primary text-primary-foreground">
-                <Fish className="size-5" />
-              </div>
+              <Link href="/">
+                <div className="flex aspect-square size-8 items-center justify-center rounded-lg bg-primary text-primary-foreground">
+                  <Fish className="size-5" />{" "}
+                </div>
+              </Link>
               <div className="grid flex-1 text-left text-sm leading-tight">
+                {" "}
                 <span className="truncate font-bold">FishPoint</span>
                 <span className="truncate text-xs text-muted-foreground">
                   Admin Panel

@@ -91,7 +91,7 @@ const ProductSchema: Schema<IProductDocument> = new Schema(
   },
   { timestamps: true }
 );
-
+ 
 // Text Indexing
 ProductSchema.index({
   title: "text",

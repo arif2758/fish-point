@@ -73,11 +73,11 @@ export default function QuantitySelector({
       </div>
     );
   }
-
+ 
   return (
     <div
       className={cn(
-        "inline-flex items-center gap-2 rounded-full border border-border/40 bg-secondary/40 backdrop-blur-[10px] p-1 shadow-sm transition-all hover:border-border/60",
+        "inline-flex items-center gap-1 rounded-full border border-border/40 bg-secondary/40 backdrop-blur-[10px] p-1 shadow-sm transition-all hover:border-border/60",
         variant === "premium" &&
           "bg-linear-to-b from-card/80 to-card/40 ring-1 ring-white/10 shadow-inner",
         className
@@ -86,18 +86,18 @@ export default function QuantitySelector({
       <Button
         variant="ghost"
         size="icon"
-        className="h-7 w-7 sm:h-8 sm:w-8 shrink-0 p-0 hover:bg-primary hover:text-primary-foreground hover:scale-105 active:scale-95 disabled:opacity-30 disabled:hover:bg-transparent disabled:hover:scale-100 transition-all rounded-full"
+        className="h-7 w-7  shrink-0 p-0 hover:bg-primary hover:text-primary-foreground  active:scale-95 disabled:opacity-30 disabled:hover:bg-transparent disabled:hover:scale-100 transition-all rounded-full"
         onClick={handleDecrease}
         disabled={quantity <= min}
         aria-label="কমান"
       >
-        <Minus className="h-3.5 w-3.5 sm:h-4 sm:w-4" />
+        <Minus className="h-3.5 w-3.5 " />
       </Button>
 
       <div className="flex flex-col items-center justify-center min-w-[7ch]">
-        <span className="text-sm sm:text-base font-black tabular-nums select-none px-1 tracking-tight">
+        <span className="text-sm font-black tabular-nums select-none px-1 tracking-tight">
           {quantity}{" "}
-          <span className="text-[10px] sm:text-xs font-bold text-muted-foreground ml-0.5">
+          <span className="text-[10px] font-bold text-muted-foreground ml-0.5">
             কেজি
           </span>
         </span>
@@ -106,12 +106,12 @@ export default function QuantitySelector({
       <Button
         variant="ghost"
         size="icon"
-        className="h-7 w-7 sm:h-8 sm:w-8 shrink-0 p-0 hover:bg-primary hover:text-primary-foreground hover:scale-105 active:scale-95 disabled:opacity-30 disabled:hover:bg-transparent disabled:hover:scale-100 transition-all rounded-full"
+        className="h-7 w-7  shrink-0 p-0 hover:bg-primary hover:text-primary-foreground  active:scale-95 disabled:opacity-30 disabled:hover:bg-transparent disabled:hover:scale-100 transition-all rounded-full"
         onClick={handleIncrease}
         disabled={quantity >= max}
         aria-label="বাড়ান"
       >
-        <Plus className="h-3.5 w-3.5 sm:h-4 sm:w-4" />
+        <Plus className="h-3.5 w-3.5" />
       </Button>
     </div>
   );

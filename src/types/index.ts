@@ -3,11 +3,35 @@ import { Types } from "mongoose";
 // ১. ইউজার ইন্টারফেস (নতুন যোগ করা হলো)
 export interface IUser {
   _id: string; // Frontend uses string ID
-  name: string;
+  userId?: string; // Custom unique readable ID e.g. FP-1001
+  fullname: string;
   phone: string;
+  alternatePhone?: string;
   email?: string;
+  password?: string; // Hashed password
+  image?: string; // Profile picture for Auth.js
   role: "customer" | "admin";
+
+  // Address & Geography
   address?: string;
+  district?: string;
+  area?: string;
+
+  // Loyalty & Subscription
+  totalOrders: number;
+  totalSpent: number;
+  rewardPoints: number;
+  isSubscriber: boolean;
+
+  // Auth & Status
+  provider?: string; // e.g., "credentials", "google"
+  emailVerified?: Date;
+  resetToken?: string;
+  resetTokenExpiry?: Date;
+  isActive: boolean;
+  isVerified: boolean;
+  orders?: string[];
+
   createdAt?: Date;
 }
 
@@ -26,7 +50,7 @@ export interface IProduct {
   salePrice: number; // Auto-calculated (basePrice - discount)
   priceLastUpdatedDate: Date;
 
-  // Inventory 
+  // Inventory
   stockKg: number;
   isOutOfStock: boolean;
   minOrderKg: number;
@@ -61,7 +85,7 @@ export interface IProduct {
   packagingType: "Vaccum Seal" | "Airtight Box" | "Poly Bag";
   isFragile: boolean;
   deliveryConstraint?: string;
-  estimatedProcessingTime: number; 
+  estimatedProcessingTime: number;
   minPreOrderNoticeHours: number;
 
   // Cooking Info
@@ -92,7 +116,7 @@ export interface ICustomRequest {
   _id?: string; // Optional for frontend key usage
   requestId: string;
   // userId can be ObjectId (backend ref) or Populated User Object (frontend display)
-  userId: string | Types.ObjectId | IUser; 
+  userId: string | Types.ObjectId | IUser;
   requestedFishName: string;
   preferredWeight: string;
   budgetLimit?: number;

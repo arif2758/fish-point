@@ -28,7 +28,7 @@ export default function ProductCard({ product }: { product: IProduct }) {
   };
 
   const productInCart = isInCart(product.productId);
-
+ 
   return (
     <article className="group relative flex flex-col overflow-hidden rounded-2xl border border-border/40 bg-card/40 backdrop-blur-[20px] transition-all duration-300 hover:shadow-xl hover:border-border/60 hover:bg-card/60">
       {/* Image Container */}
@@ -96,7 +96,7 @@ export default function ProductCard({ product }: { product: IProduct }) {
             setQuantity={setQuantity}
             min={product.minOrderKg}
             max={product.maxOrderKg}
-            className="h-8 sm:h-7"
+            className="h-8 "
           />
         </div>
 
